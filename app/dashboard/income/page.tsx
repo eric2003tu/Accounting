@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, TrendingUp, BadgeCheck, Clock3 } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
@@ -64,6 +65,7 @@ const monthlyIncome = [
 ];
 
 export default function IncomePage() {
+  const router = useRouter();
   const totalIncome = incomeData.reduce((sum, item) => sum + item.amount, 0);
   const completedIncome = incomeData
     .filter((item) => item.status === 'Completed')
@@ -108,6 +110,7 @@ export default function IncomePage() {
         icon={Plus}
         label="Record Income"
         variant="primary"
+        onClick={() => router.push('/dashboard/income/add')}
       />
 
       {/* Charts */}
