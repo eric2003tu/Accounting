@@ -137,7 +137,7 @@ export default function ExpensesPage() {
       </div>
 
       {/* Summary and Table */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         <div className="lg:col-span-2">
           <DataTable
             title="Expense Records"
@@ -217,7 +217,7 @@ export default function ExpensesPage() {
         </div>
 
         {/* Expenses Summary */}
-        <SummaryCard
+        {/* <SummaryCard
           title="Expenses Summary"
           items={[
             { label: 'Highest', value: '$2,500.00', color: 'text-red-600' },
@@ -226,7 +226,7 @@ export default function ExpensesPage() {
             { label: 'Total', value: `$${totalExpenses.toFixed(2)}`, color: 'text-red-600' },
           ]}
           footer="Updated today"
-        />
+        /> */}
       </div>
     </div>
   );
