@@ -1,4 +1,5 @@
 import { ArrowRight, BadgeCheck, Building2, Globe2, ShieldCheck, Sparkles, TrendingUp, Users } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 const milestones = [
@@ -71,20 +72,26 @@ export default function AboutPage() {
   return (
     <section className="bg-white py-14 sm:py-16 lg:py-20">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-green-700">
-            <BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />
-            About accounting
-          </p>
-          <h1 className="mt-5 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-            We build modern finance infrastructure for teams that are ready to grow
-          </h1>
-          <p className="mt-6 text-base leading-8 text-slate-600 sm:text-lg">
-            Our mission is to help businesses replace fragmented spreadsheets and manual accounting routines with a single platform that brings visibility, speed, and confidence to every financial decision.
-          </p>
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
+          <div className="relative min-h-[360px] sm:min-h-[420px]">
+            <Image src="/images/bg1.jpg" alt="About accounting platform" fill priority className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/65 to-slate-950/35" />
+            <div className="relative flex min-h-[360px] flex-col justify-end p-6 sm:min-h-[420px] sm:p-10 lg:max-w-4xl">
+              <p className="inline-flex w-fit items-center gap-2 rounded-full border border-green-300/40 bg-green-400/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-green-100">
+                <BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                About accounting
+              </p>
+              <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                We build modern finance infrastructure for teams that are ready to grow
+              </h1>
+              <p className="mt-5 max-w-3xl text-sm leading-7 text-slate-200 sm:text-base sm:leading-8">
+                Our mission is to help businesses replace fragmented spreadsheets and manual accounting routines with a single platform that brings visibility, speed, and confidence to every financial decision.
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((item) => (
             <article
               key={item.label}

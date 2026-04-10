@@ -1,4 +1,5 @@
 import { BadgeCheck, Check, HelpCircle, ShieldCheck, Sparkles } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 const plans = [
@@ -76,24 +77,30 @@ export default function PricingPage() {
   return (
     <section className="bg-white py-14 sm:py-16 lg:py-20">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-green-700">
-            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-            Pricing plans
-          </p>
-          <h1 className="mt-5 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-            Flexible pricing built for every stage of your finance journey
-          </h1>
-          <p className="mt-6 text-base leading-8 text-slate-600 sm:text-lg">
-            Start simple, scale confidently, and choose the level of automation and support that matches your business growth.
-          </p>
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
-            <BadgeCheck className="h-3.5 w-3.5 text-green-700" aria-hidden="true" />
-            Annual plans save up to 20%
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
+          <div className="relative min-h-[360px] sm:min-h-[420px]">
+            <Image src="/images/bg2.jpg" alt="Pricing options overview" fill priority className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/70 to-slate-950/40" />
+            <div className="relative flex min-h-[360px] flex-col justify-end p-6 sm:min-h-[420px] sm:p-10 lg:max-w-4xl">
+              <p className="inline-flex w-fit items-center gap-2 rounded-full border border-green-300/40 bg-green-400/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-green-100">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                Pricing plans
+              </p>
+              <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                Flexible pricing built for every stage of your finance journey
+              </h1>
+              <p className="mt-5 max-w-3xl text-sm leading-7 text-slate-200 sm:text-base sm:leading-8">
+                Start simple, scale confidently, and choose the level of automation and support that matches your business growth.
+              </p>
+              <div className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                <BadgeCheck className="h-3.5 w-3.5 text-green-300" aria-hidden="true" />
+                Annual plans save up to 20%
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+        <div className="mt-14 grid gap-6 lg:grid-cols-3">
           {plans.map((plan) => (
             <article
               key={plan.name}
