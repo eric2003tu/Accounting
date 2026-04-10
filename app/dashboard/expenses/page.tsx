@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Plus, DollarSign, BadgeCheck, Clock3 } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
 import SummaryCard from '@/app/components/dashboard/SummaryCard';
-import QuickActionButton from '@/app/components/dashboard/QuickActionButton';
 
 const expensesData = [
   {
@@ -114,11 +114,15 @@ export default function ExpensesPage() {
       </div>
 
       {/* Quick Action */}
-      <QuickActionButton
-        icon={Plus}
-        label="Record Expense"
-        variant="primary"
-      />
+      <div className="flex justify-start">
+        <Link
+          href="/dashboard/expenses/add"
+          className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+        >
+          <Plus className="h-4 w-4" />
+          Record Expense
+        </Link>
+      </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
