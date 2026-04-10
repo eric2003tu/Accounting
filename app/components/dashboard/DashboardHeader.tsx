@@ -15,7 +15,7 @@ export default function DashboardHeader({
   onOpenMobileSidebar,
 }: DashboardHeaderProps) {
   return (
-    <header className="flex items-center justify-between h-16 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 sticky top-0 z-40">
+    <header data-dashboard-header className="flex items-center justify-between h-16 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 sticky top-0 z-40">
       {/* Left Section */}
       <div className="flex items-center gap-4">
         <button
@@ -64,7 +64,7 @@ export default function DashboardHeader({
         {/* User Profile */}
         <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-slate-200">
           <div className="hidden sm:flex flex-col items-end">
-            <p className="text-sm font-medium text-slate-900">John Doe</p>
+            <p className="text-sm font-medium text-slate-900 font-semibold">Eric TUYISHIME</p>
             <p className="text-xs text-slate-500">Business Owner</p>
           </div>
           <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">

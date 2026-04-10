@@ -24,3 +24,41 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  body {
+    background: #ffffff;
+    color: #0f172a;
+  }
+
+  [data-dashboard-shell] {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  [data-dashboard-sidebar],
+  [data-dashboard-header],
+  .no-print {
+    display: none !important;
+  }
+
+  [data-dashboard-main] {
+    display: block !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  [data-dashboard-scroll] {
+    overflow: visible !important;
+    height: auto !important;
+    background: #ffffff !important;
+  }
+
+  [data-report-printable] {
+    max-width: none !important;
+  }
+}

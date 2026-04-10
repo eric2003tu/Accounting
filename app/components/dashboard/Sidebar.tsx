@@ -82,6 +82,7 @@ export default function Sidebar({ isOpen, mobileOpen, onClose }: SidebarProps) {
       )}
 
       <aside
+        data-dashboard-sidebar
         className={`fixed inset-y-0 left-0 z-50 flex h-screen w-72 -translate-x-full flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-white transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:translate-x-0 lg:transition-all ${
           mobileOpen ? 'translate-x-0' : ''
         } ${isOpen ? 'lg:w-64' : 'lg:w-20'}`}
