@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Plus, TrendingUp, BadgeCheck, Clock3 } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
 import SummaryCard from '@/app/components/dashboard/SummaryCard';
-import QuickActionButton from '@/app/components/dashboard/QuickActionButton';
 
 const incomeData = [
   {
@@ -65,7 +64,6 @@ const monthlyIncome = [
 ];
 
 export default function IncomePage() {
-  const router = useRouter();
   const totalIncome = incomeData.reduce((sum, item) => sum + item.amount, 0);
   const completedIncome = incomeData
     .filter((item) => item.status === 'Completed')
@@ -105,13 +103,14 @@ export default function IncomePage() {
         />
       </div>
 
-      {/* Quick Action */}
-      <QuickActionButton
-        icon={Plus}
-        label="Record Income"
-        variant="primary"
-        onClick={() => router.push('/dashboard/income/add')}
-      />
+      {/* Add Income Button */}
+      <Link
+        href="/dashboard/income/add"
+        className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+      >
+        <Plus className="h-4 w-4" />
+        Record Income
+      </Link>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
