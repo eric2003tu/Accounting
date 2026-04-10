@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
+import SimpleChart from '@/app/components/dashboard/SimpleChart';
 
 const activityItems = [
   {
@@ -58,6 +59,32 @@ const activityItems = [
   },
 ];
 
+const monthlyData = [
+  { label: 'Jan', value: 12500 },
+  { label: 'Feb', value: 15800 },
+  { label: 'Mar', value: 14200 },
+  { label: 'Apr', value: 18500 },
+  { label: 'May', value: 16800 },
+  { label: 'Jun', value: 21200 },
+];
+
+const cashFlowTrend = [
+  { label: 'Jan', value: 8200 },
+  { label: 'Feb', value: 9600 },
+  { label: 'Mar', value: 9100 },
+  { label: 'Apr', value: 11400 },
+  { label: 'May', value: 10300 },
+  { label: 'Jun', value: 12850 },
+];
+
+const expenseCategoryData = [
+  { label: 'Salaries', value: 15000 },
+  { label: 'Utilities', value: 2500 },
+  { label: 'Rent', value: 5000 },
+  { label: 'Marketing', value: 3500 },
+  { label: 'Other', value: 2000 },
+];
+
 export default function AdminOverviewPage() {
   const warningCount = activityItems.filter((item) => item.status === 'Warning').length;
 
@@ -95,6 +122,27 @@ export default function AdminOverviewPage() {
           description="Subscriptions and addons"
           icon={CircleDollarSign}
           trend={{ value: 9, isPositive: true }}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <SimpleChart
+          title="Revenue Trend"
+          description="Monthly sales and service income"
+          data={monthlyData}
+          type="bar"
+        />
+        <SimpleChart
+          title="Cash Flow Trend"
+          description="Operating cash generated after expenses"
+          data={cashFlowTrend}
+          type="line"
+        />
+        <SimpleChart
+          title="Expense Breakdown"
+          description="Expense allocation by cost center"
+          data={expenseCategoryData}
+          type="pie"
         />
       </div>
 
