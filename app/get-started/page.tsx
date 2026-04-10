@@ -1,7 +1,13 @@
+"use client";
+
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function GetStartedPage() {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <section className="h-[calc(100svh-8.5rem)] min-h-[680px] bg-white px-4 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto grid h-full w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.12)] lg:grid-cols-2">
@@ -48,14 +54,24 @@ export default function GetStartedPage() {
                 <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-700">
                   Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  placeholder="Create a strong password"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Create a strong password"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-12 text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition hover:text-slate-700"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
 
               <label className="flex items-start gap-2 text-sm text-slate-600">
