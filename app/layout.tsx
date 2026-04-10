@@ -22,7 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isDashboard = pathname.startsWith("/dashboard");
+  const hideGlobalChrome =
+    pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
 
   return (
     <html
@@ -30,9 +31,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {!isDashboard && <NavBar />}
+        {!hideGlobalChrome && <NavBar />}
         <main className="flex-1">{children}</main>
-        {!isDashboard && <Footer />}
+        {!hideGlobalChrome && <Footer />}
       </body>
     </html>
   );
