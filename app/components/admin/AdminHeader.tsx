@@ -132,7 +132,7 @@ export default function AdminHeader({
               {/* Menu Items */}
               <div className="p-2 space-y-1">
                 <Link
-                  href="/admin/settings"
+                  href="/admin/profile"
                   onClick={() => setProfileMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                 >
@@ -140,7 +140,7 @@ export default function AdminHeader({
                   Profile
                 </Link>
                 <Link
-                  href="/admin/settings"
+                  href="/admin/profile"
                   onClick={() => setProfileMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                 >
