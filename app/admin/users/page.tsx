@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Users, UserCheck, UserX } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
@@ -19,9 +20,18 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900">Users</h1>
-        <p className="text-slate-600 mt-1">Manage identities, access posture, and account lifecycle</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Users</h1>
+          <p className="text-slate-600 mt-1">Manage identities, access posture, and account lifecycle</p>
+        </div>
+
+        <Link
+          href="/admin/users/add"
+          className="inline-flex items-center justify-center rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
+        >
+          Add Business Owner
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
