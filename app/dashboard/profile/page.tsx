@@ -28,14 +28,14 @@ export default function DashboardProfilePage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-green-700">
-              <BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />
+              <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
               Profile
             </p>
             <h1 className="mt-3 text-3xl font-bold text-slate-900">My Profile</h1>
             <p className="mt-1 text-sm text-slate-600">Manage your account identity and business contact details.</p>
           </div>
           <button className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700">
-            <PencilLine className="h-4 w-4" aria-hidden="true" />
+            <PencilLine className="h-4 w-4" aria-hidden />
             Edit Profile
           </button>
         </div>
@@ -96,7 +96,7 @@ function InfoItem({ icon: Icon, label, value }: InfoItemProps) {
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
       <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-        <Icon className="h-3.5 w-3.5 text-green-700" aria-hidden="true" />
+        <Icon className="h-3.5 w-3.5 text-green-700" aria-hidden />
         {label}
       </p>
       <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
