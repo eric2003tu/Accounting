@@ -6,24 +6,9 @@ import { Users, UserCheck, UserX } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
+import { adminUsers, type AdminUser } from '@/app/admin/data/adminDirectoryData';
 
-type AdminUser = {
-  id: number;
-  name: string;
-  email: string;
-  role: 'Owner' | 'Admin' | 'Accountant' | 'Viewer' | 'Support';
-  status: 'Active' | 'Invited' | 'Suspended';
-  mfa: 'Enabled' | 'Pending' | 'Disabled';
-  lastLogin: string;
-};
-
-const initialUsers: AdminUser[] = [
-  { id: 1, name: 'Aline Niyonsaba', email: 'aline@acme.com', role: 'Admin', status: 'Active', mfa: 'Enabled', lastLogin: '2026-04-10 08:10' },
-  { id: 2, name: 'Samuel Uwizeye', email: 'samuel@acme.com', role: 'Accountant', status: 'Active', mfa: 'Enabled', lastLogin: '2026-04-10 07:55' },
-  { id: 3, name: 'Diane Mutesi', email: 'diane@acme.com', role: 'Viewer', status: 'Invited', mfa: 'Pending', lastLogin: '-' },
-  { id: 4, name: 'Jean Claude', email: 'jean@acme.com', role: 'Support', status: 'Suspended', mfa: 'Disabled', lastLogin: '2026-04-06 11:45' },
-  { id: 5, name: 'Eric Tuyishime', email: 'eric@acme.com', role: 'Owner', status: 'Active', mfa: 'Enabled', lastLogin: '2026-04-10 08:20' },
-];
+const initialUsers: AdminUser[] = adminUsers;
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>(initialUsers);

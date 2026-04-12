@@ -2,320 +2,23 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
-  BadgeCheck,
+  BriefcaseBusiness,
   Building2,
   CalendarClock,
-  CircleDollarSign,
-  CreditCard,
   Mail,
   Phone,
-  Scale,
   ShieldCheck,
   UserRound,
 } from 'lucide-react';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
-
-type FinancialSnapshot = {
-  monthlyRevenue: number;
-  monthlyExpenses: number;
-  netProfit: number;
-  cashBalance: number;
-  receivables: number;
-  payables: number;
-  assets: number;
-  liabilities: number;
-  equity: number;
-  overdueInvoices: number;
-  revenueTrend: Array<{ label: string; value: number }>;
-  expenseBreakdown: Array<{ label: string; value: number }>;
-};
-
-type BusinessOwnerDetail = {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  role: 'Owner' | 'Admin' | 'Accountant' | 'Viewer' | 'Support';
-  userStatus: 'Active' | 'Invited' | 'Suspended';
-  mfa: 'Enabled' | 'Pending' | 'Disabled';
-  lastLogin: string;
-  joinedAt: string;
-  business: {
-    legalName: string;
-    tradeName: string;
-    taxId: string;
-    registrationNo: string;
-    industry: string;
-    country: string;
-    city: string;
-    timezone: string;
-    subscription: string;
-    billingCycle: string;
-    nextBillingDate: string;
-  };
-  financials: FinancialSnapshot;
-};
-
-const owners: BusinessOwnerDetail[] = [
-  {
-    id: 5,
-    name: 'Eric Tuyishime',
-    email: 'eric@acme.com',
-    phone: '+250 788 332 741',
-    role: 'Owner',
-    userStatus: 'Active',
-    mfa: 'Enabled',
-    lastLogin: '2026-04-10 08:20',
-    joinedAt: '2025-02-10',
-    business: {
-      legalName: 'Acme Holdings Ltd',
-      tradeName: 'Acme',
-      taxId: 'TIN-94502781',
-      registrationNo: 'RDB-2025-445901',
-      industry: 'Technology Services',
-      country: 'Rwanda',
-      city: 'Kigali',
-      timezone: 'Africa/Kigali',
-      subscription: 'Professional',
-      billingCycle: 'Monthly',
-      nextBillingDate: '2026-05-01',
-    },
-    financials: {
-      monthlyRevenue: 168400,
-      monthlyExpenses: 113700,
-      netProfit: 54700,
-      cashBalance: 204300,
-      receivables: 58800,
-      payables: 31600,
-      assets: 641500,
-      liabilities: 212000,
-      equity: 429500,
-      overdueInvoices: 4,
-      revenueTrend: [
-        { label: 'Nov', value: 129000 },
-        { label: 'Dec', value: 136800 },
-        { label: 'Jan', value: 141200 },
-        { label: 'Feb', value: 153500 },
-        { label: 'Mar', value: 160900 },
-        { label: 'Apr', value: 168400 },
-      ],
-      expenseBreakdown: [
-        { label: 'Payroll', value: 44000 },
-        { label: 'Infrastructure', value: 23800 },
-        { label: 'Operations', value: 18200 },
-        { label: 'Marketing', value: 15400 },
-        { label: 'Admin', value: 12300 },
-      ],
-    },
-  },
-  {
-    id: 1,
-    name: 'Aline Niyonsaba',
-    email: 'aline@acme.com',
-    phone: '+250 722 190 344',
-    role: 'Owner',
-    userStatus: 'Active',
-    mfa: 'Enabled',
-    lastLogin: '2026-04-10 08:10',
-    joinedAt: '2024-11-04',
-    business: {
-      legalName: 'Nexa Retail Group Ltd',
-      tradeName: 'Nexa Retail',
-      taxId: 'TIN-21460097',
-      registrationNo: 'RDB-2024-120883',
-      industry: 'Retail',
-      country: 'Rwanda',
-      city: 'Kigali',
-      timezone: 'Africa/Kigali',
-      subscription: 'Growth',
-      billingCycle: 'Monthly',
-      nextBillingDate: '2026-05-03',
-    },
-    financials: {
-      monthlyRevenue: 93200,
-      monthlyExpenses: 71800,
-      netProfit: 21400,
-      cashBalance: 121600,
-      receivables: 26500,
-      payables: 14200,
-      assets: 386200,
-      liabilities: 154400,
-      equity: 231800,
-      overdueInvoices: 2,
-      revenueTrend: [
-        { label: 'Nov', value: 74500 },
-        { label: 'Dec', value: 80100 },
-        { label: 'Jan', value: 82500 },
-        { label: 'Feb', value: 86700 },
-        { label: 'Mar', value: 90100 },
-        { label: 'Apr', value: 93200 },
-      ],
-      expenseBreakdown: [
-        { label: 'Inventory', value: 27800 },
-        { label: 'Payroll', value: 17600 },
-        { label: 'Rent', value: 12400 },
-        { label: 'Logistics', value: 8200 },
-        { label: 'Admin', value: 5800 },
-      ],
-    },
-  },
-  {
-    id: 2,
-    name: 'Samuel Uwizeye',
-    email: 'samuel@acme.com',
-    phone: '+250 783 441 920',
-    role: 'Accountant',
-    userStatus: 'Active',
-    mfa: 'Enabled',
-    lastLogin: '2026-04-10 07:55',
-    joinedAt: '2025-01-16',
-    business: {
-      legalName: 'Acme Holdings Ltd',
-      tradeName: 'Acme',
-      taxId: 'TIN-94502781',
-      registrationNo: 'RDB-2025-445901',
-      industry: 'Technology Services',
-      country: 'Rwanda',
-      city: 'Kigali',
-      timezone: 'Africa/Kigali',
-      subscription: 'Professional',
-      billingCycle: 'Monthly',
-      nextBillingDate: '2026-05-01',
-    },
-    financials: {
-      monthlyRevenue: 168400,
-      monthlyExpenses: 113700,
-      netProfit: 54700,
-      cashBalance: 204300,
-      receivables: 58800,
-      payables: 31600,
-      assets: 641500,
-      liabilities: 212000,
-      equity: 429500,
-      overdueInvoices: 3,
-      revenueTrend: [
-        { label: 'Nov', value: 129000 },
-        { label: 'Dec', value: 136800 },
-        { label: 'Jan', value: 141200 },
-        { label: 'Feb', value: 153500 },
-        { label: 'Mar', value: 160900 },
-        { label: 'Apr', value: 168400 },
-      ],
-      expenseBreakdown: [
-        { label: 'Payroll', value: 44000 },
-        { label: 'Infrastructure', value: 23800 },
-        { label: 'Operations', value: 18200 },
-        { label: 'Marketing', value: 15400 },
-        { label: 'Admin', value: 12300 },
-      ],
-    },
-  },
-  {
-    id: 3,
-    name: 'Diane Mutesi',
-    email: 'diane@acme.com',
-    phone: '+250 789 005 618',
-    role: 'Viewer',
-    userStatus: 'Invited',
-    mfa: 'Pending',
-    lastLogin: '-',
-    joinedAt: '2026-04-09',
-    business: {
-      legalName: 'Acme Holdings Ltd',
-      tradeName: 'Acme',
-      taxId: 'TIN-94502781',
-      registrationNo: 'RDB-2025-445901',
-      industry: 'Technology Services',
-      country: 'Rwanda',
-      city: 'Kigali',
-      timezone: 'Africa/Kigali',
-      subscription: 'Professional',
-      billingCycle: 'Monthly',
-      nextBillingDate: '2026-05-01',
-    },
-    financials: {
-      monthlyRevenue: 168400,
-      monthlyExpenses: 113700,
-      netProfit: 54700,
-      cashBalance: 204300,
-      receivables: 58800,
-      payables: 31600,
-      assets: 641500,
-      liabilities: 212000,
-      equity: 429500,
-      overdueInvoices: 4,
-      revenueTrend: [
-        { label: 'Nov', value: 129000 },
-        { label: 'Dec', value: 136800 },
-        { label: 'Jan', value: 141200 },
-        { label: 'Feb', value: 153500 },
-        { label: 'Mar', value: 160900 },
-        { label: 'Apr', value: 168400 },
-      ],
-      expenseBreakdown: [
-        { label: 'Payroll', value: 44000 },
-        { label: 'Infrastructure', value: 23800 },
-        { label: 'Operations', value: 18200 },
-        { label: 'Marketing', value: 15400 },
-        { label: 'Admin', value: 12300 },
-      ],
-    },
-  },
-  {
-    id: 4,
-    name: 'Jean Claude',
-    email: 'jean@acme.com',
-    phone: '+250 782 564 229',
-    role: 'Support',
-    userStatus: 'Suspended',
-    mfa: 'Disabled',
-    lastLogin: '2026-04-06 11:45',
-    joinedAt: '2025-03-11',
-    business: {
-      legalName: 'Acme Holdings Ltd',
-      tradeName: 'Acme',
-      taxId: 'TIN-94502781',
-      registrationNo: 'RDB-2025-445901',
-      industry: 'Technology Services',
-      country: 'Rwanda',
-      city: 'Kigali',
-      timezone: 'Africa/Kigali',
-      subscription: 'Professional',
-      billingCycle: 'Monthly',
-      nextBillingDate: '2026-05-01',
-    },
-    financials: {
-      monthlyRevenue: 168400,
-      monthlyExpenses: 113700,
-      netProfit: 54700,
-      cashBalance: 204300,
-      receivables: 58800,
-      payables: 31600,
-      assets: 641500,
-      liabilities: 212000,
-      equity: 429500,
-      overdueInvoices: 5,
-      revenueTrend: [
-        { label: 'Nov', value: 129000 },
-        { label: 'Dec', value: 136800 },
-        { label: 'Jan', value: 141200 },
-        { label: 'Feb', value: 153500 },
-        { label: 'Mar', value: 160900 },
-        { label: 'Apr', value: 168400 },
-      ],
-      expenseBreakdown: [
-        { label: 'Payroll', value: 44000 },
-        { label: 'Infrastructure', value: 23800 },
-        { label: 'Operations', value: 18200 },
-        { label: 'Marketing', value: 15400 },
-        { label: 'Admin', value: 12300 },
-      ],
-    },
-  },
-];
+import {
+  getAdminUserById,
+  getBusinessesByOwnerId,
+} from '@/app/admin/data/adminDirectoryData';
 
 function money(value: number) {
-  return `$${value.toLocaleString()}`;
+  const sign = value < 0 ? '-' : '';
+  return `${sign}$${Math.abs(value).toLocaleString()}`;
 }
 
 function ratio(numerator: number, denominator: number) {
@@ -326,7 +29,7 @@ function ratio(numerator: number, denominator: number) {
   return `${((numerator / denominator) * 100).toFixed(1)}%`;
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function UserInfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1 border-b border-slate-100 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 last:border-b-0 last:pb-0">
       <span className="text-sm text-slate-500">{label}</span>
@@ -335,21 +38,46 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default async function AdminBusinessOwnerDetailPage({
+export default async function AdminUserDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const ownerId = Number(id);
-  const owner = owners.find((item) => item.id === ownerId);
+  const userId = Number(id);
+  const user = getAdminUserById(userId);
 
-  if (!owner) {
+  if (!user) {
     notFound();
   }
 
-  const profitMargin = ratio(owner.financials.netProfit, owner.financials.monthlyRevenue);
-  const currentRatio = ratio(owner.financials.assets, owner.financials.liabilities);
+  const ownedBusinesses = getBusinessesByOwnerId(user.id);
+
+  const totalRevenue = ownedBusinesses.reduce(
+    (sum, business) => sum + business.financials.monthlyRevenue,
+    0
+  );
+  const totalNetProfit = ownedBusinesses.reduce(
+    (sum, business) => sum + business.financials.netProfit,
+    0
+  );
+  const atRiskBusinesses = ownedBusinesses.filter(
+    (business) =>
+      business.status !== 'Active' ||
+      business.financials.netProfit < 0 ||
+      business.financials.overdueInvoices >= 5
+  ).length;
+  const blendedMargin = ratio(totalNetProfit, totalRevenue);
+
+  const revenueByBusiness = ownedBusinesses.map((business) => ({
+    label: business.businessName,
+    value: business.financials.monthlyRevenue,
+  }));
+
+  const equityByBusiness = ownedBusinesses.map((business) => ({
+    label: business.businessName,
+    value: Math.max(0, business.financials.equity),
+  }));
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -368,9 +96,9 @@ export default async function AdminBusinessOwnerDetailPage({
             </Link>
 
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Business Owner Profile</h1>
+              <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">User Profile</h1>
               <p className="mt-1 text-sm text-slate-600 sm:text-base">
-                Unified view of the owner account, business profile, and current financial position.
+                Account details, security posture, and all businesses owned by this user.
               </p>
             </div>
           </div>
@@ -378,10 +106,10 @@ export default async function AdminBusinessOwnerDetailPage({
           <div className="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 lg:w-auto lg:max-w-md">
             <div className="flex items-center gap-2 font-semibold">
               <ShieldCheck className="h-4 w-4" />
-              Admin snapshot
+              Access snapshot
             </div>
             <p className="mt-1 break-words text-emerald-800">
-              Status: {owner.userStatus} · MFA: {owner.mfa} · Last login: {owner.lastLogin}
+              Role: {user.role} · Status: {user.status} · MFA: {user.mfa}
             </p>
           </div>
         </div>
@@ -395,18 +123,21 @@ export default async function AdminBusinessOwnerDetailPage({
                 <UserRound className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Owner details</h2>
-                <p className="text-sm text-slate-500">Identity and account-level controls.</p>
+                <h2 className="text-lg font-semibold text-slate-900">User details</h2>
+                <p className="text-sm text-slate-500">Identity, access, and audit fields.</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-              <InfoRow label="Full name" value={owner.name} />
-              <InfoRow label="Role" value={owner.role} />
-              <InfoRow label="Email" value={owner.email} />
-              <InfoRow label="Phone" value={owner.phone} />
-              <InfoRow label="User status" value={owner.userStatus} />
-              <InfoRow label="Joined" value={owner.joinedAt} />
+              <UserInfoRow label="Full name" value={user.name} />
+              <UserInfoRow label="Role" value={user.role} />
+              <UserInfoRow label="Email" value={user.email} />
+              <UserInfoRow label="Phone" value={user.phone} />
+              <UserInfoRow label="Department" value={user.department} />
+              <UserInfoRow label="Status" value={user.status} />
+              <UserInfoRow label="MFA" value={user.mfa} />
+              <UserInfoRow label="Last login" value={user.lastLogin} />
+              <UserInfoRow label="Joined" value={user.joinedAt} />
             </div>
           </section>
 
@@ -416,178 +147,190 @@ export default async function AdminBusinessOwnerDetailPage({
                 <Building2 className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Business details</h2>
-                <p className="text-sm text-slate-500">Registration, subscription, and operational footprint.</p>
+                <h2 className="text-lg font-semibold text-slate-900">Businesses owned</h2>
+                <p className="text-sm text-slate-500">All organizations where this user is listed as owner.</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-              <InfoRow label="Legal name" value={owner.business.legalName} />
-              <InfoRow label="Trade name" value={owner.business.tradeName} />
-              <InfoRow label="Tax ID" value={owner.business.taxId} />
-              <InfoRow label="Registration no." value={owner.business.registrationNo} />
-              <InfoRow label="Industry" value={owner.business.industry} />
-              <InfoRow label="Country" value={owner.business.country} />
-              <InfoRow label="City" value={owner.business.city} />
-              <InfoRow label="Timezone" value={owner.business.timezone} />
-              <InfoRow label="Plan" value={owner.business.subscription} />
-              <InfoRow label="Billing cycle" value={owner.business.billingCycle} />
-              <InfoRow label="Next billing" value={owner.business.nextBillingDate} />
-            </div>
+            {ownedBusinesses.length === 0 ? (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-600">
+                This user does not currently own any registered business.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {ownedBusinesses.map((business) => (
+                  <div
+                    key={business.id}
+                    className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <Link
+                          href={`/admin/businesses/${business.id}`}
+                          className="text-base font-semibold text-slate-900 transition-colors hover:text-green-700"
+                        >
+                          {business.businessName}
+                        </Link>
+                        <p className="mt-1 text-sm text-slate-600">
+                          {business.country} · {business.industry} · {business.subscription}
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-flex rounded px-2 py-1 text-xs font-semibold ${
+                          business.status === 'Active'
+                            ? 'bg-green-100 text-green-700'
+                            : business.status === 'Under Review'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {business.status}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-slate-500">Revenue</p>
+                        <p className="font-semibold text-slate-900">{money(business.financials.monthlyRevenue)}</p>
+                      </div>
+                      <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-slate-500">Net Profit</p>
+                        <p className={`font-semibold ${business.financials.netProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                          {money(business.financials.netProfit)}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-slate-500">Equity</p>
+                        <p className={`font-semibold ${business.financials.equity >= 0 ? 'text-slate-900' : 'text-red-700'}`}>
+                          {money(business.financials.equity)}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-slate-500">Overdue</p>
+                        <p className={`font-semibold ${business.financials.overdueInvoices >= 5 ? 'text-red-700' : 'text-slate-900'}`}>
+                          {business.financials.overdueInvoices}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         </div>
 
         <aside className="space-y-4 sm:space-y-6 xl:sticky xl:top-6 xl:self-start">
           <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-            <h3 className="text-base font-semibold text-slate-900">Contact quick actions</h3>
+            <h3 className="text-base font-semibold text-slate-900">Quick actions</h3>
             <div className="mt-4 space-y-3">
               <a
-                href={`mailto:${owner.email}`}
+                href={`mailto:${user.email}`}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 <Mail className="h-4 w-4" />
-                Email owner
+                Email user
               </a>
               <a
-                href={`tel:${owner.phone}`}
+                href={`tel:${user.phone}`}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 <Phone className="h-4 w-4" />
-                Call owner
+                Call user
               </a>
             </div>
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-            <h3 className="text-base font-semibold text-slate-900">Finance health summary</h3>
+            <h3 className="text-base font-semibold text-slate-900">Ownership summary</h3>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-slate-500">Cash balance</dt>
-                <dd className="font-semibold text-slate-900">{money(owner.financials.cashBalance)}</dd>
+                <dt className="text-slate-500">Businesses owned</dt>
+                <dd className="font-semibold text-slate-900">{ownedBusinesses.length}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-slate-500">Receivables</dt>
-                <dd className="font-semibold text-slate-900">{money(owner.financials.receivables)}</dd>
+                <dt className="text-slate-500">Combined revenue</dt>
+                <dd className="font-semibold text-slate-900">{money(totalRevenue)}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-slate-500">Payables</dt>
-                <dd className="font-semibold text-slate-900">{money(owner.financials.payables)}</dd>
+                <dt className="text-slate-500">Combined net profit</dt>
+                <dd className={`font-semibold ${totalNetProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                  {money(totalNetProfit)}
+                </dd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-slate-500">Current ratio</dt>
-                <dd className="font-semibold text-slate-900">{currentRatio}</dd>
+                <dt className="text-slate-500">Blended margin</dt>
+                <dd className="font-semibold text-slate-900">{blendedMargin}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-slate-500">Profit margin</dt>
-                <dd className="font-semibold text-slate-900">{profitMargin}</dd>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <dt className="text-slate-500">Overdue invoices</dt>
-                <dd className="font-semibold text-amber-700">{owner.financials.overdueInvoices}</dd>
+                <dt className="text-slate-500">At-risk businesses</dt>
+                <dd className={`font-semibold ${atRiskBusinesses > 0 ? 'text-amber-700' : 'text-slate-900'}`}>
+                  {atRiskBusinesses}
+                </dd>
               </div>
             </dl>
           </section>
         </aside>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Monthly Revenue</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(owner.financials.monthlyRevenue)}</p>
-              <p className="mt-2 text-sm text-slate-600">Current month gross revenue</p>
-            </div>
-            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
-              <CircleDollarSign className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
+      {ownedBusinesses.length > 0 && (
+        <>
+          <section className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-2">
+            <SimpleChart
+              title="Revenue by Business"
+              description="Current month revenue distribution"
+              data={revenueByBusiness}
+              type="bar"
+            />
+            <SimpleChart
+              title="Equity Distribution"
+              description="Positive equity by owned business"
+              data={equityByBusiness}
+              type="pie"
+            />
+          </section>
 
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Monthly Expenses</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(owner.financials.monthlyExpenses)}</p>
-              <p className="mt-2 text-sm text-slate-600">Current month operating costs</p>
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
+            <div className="mb-4 flex items-center gap-2 text-slate-900">
+              <CalendarClock className="h-5 w-5 text-green-700" />
+              <h2 className="text-lg font-semibold">Owner portfolio notes</h2>
             </div>
-            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
-              <CreditCard className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
 
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Net Profit</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(owner.financials.netProfit)}</p>
-              <p className="mt-2 text-sm text-slate-600">Margin {profitMargin}</p>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Risk concentration</h3>
+                <p className="mt-2 text-2xl font-bold text-slate-900">{atRiskBusinesses}</p>
+                <p className="mt-1 text-sm text-slate-500">Businesses requiring financial or compliance attention.</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Largest monthly revenue</h3>
+                <p className="mt-2 text-2xl font-bold text-slate-900">
+                  {money(Math.max(...ownedBusinesses.map((business) => business.financials.monthlyRevenue)))}
+                </p>
+                <p className="mt-1 text-sm text-slate-500">Top performing business under this user.</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Largest overdue burden</h3>
+                <p className="mt-2 text-2xl font-bold text-slate-900">
+                  {Math.max(...ownedBusinesses.map((business) => business.financials.overdueInvoices))}
+                </p>
+                <p className="mt-1 text-sm text-slate-500">Peak overdue invoice count across owned businesses.</p>
+              </div>
             </div>
-            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
-              <BadgeCheck className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
+          </section>
+        </>
+      )}
 
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Balance Position</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(owner.financials.equity)}</p>
-              <p className="mt-2 text-sm text-slate-600">Assets {money(owner.financials.assets)}</p>
-              <p className="text-sm text-slate-600">Liabilities {money(owner.financials.liabilities)}</p>
-            </div>
-            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
-              <Scale className="h-6 w-6" />
-            </div>
+      {ownedBusinesses.length === 0 && (
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+            <BriefcaseBusiness className="h-5 w-5" />
           </div>
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-2">
-        <SimpleChart
-          title="Revenue Trend"
-          description="Last 6 months performance"
-          data={owner.financials.revenueTrend}
-          type="line"
-        />
-        <SimpleChart
-          title="Expense Allocation"
-          description="Monthly spend by major category"
-          data={owner.financials.expenseBreakdown}
-          type="pie"
-        />
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-        <div className="mb-4 flex items-center gap-2 text-slate-900">
-          <CalendarClock className="h-5 w-5 text-green-700" />
-          <h2 className="text-lg font-semibold">Business finance statement snapshot</h2>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Assets</h3>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{money(owner.financials.assets)}</p>
-            <p className="mt-1 text-sm text-slate-500">Cash + receivables + operating assets</p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Liabilities</h3>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{money(owner.financials.liabilities)}</p>
-            <p className="mt-1 text-sm text-slate-500">Payables + debt obligations</p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Equity</h3>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{money(owner.financials.equity)}</p>
-            <p className="mt-1 text-sm text-slate-500">Net position after liabilities</p>
-          </div>
-        </div>
-      </section>
+          <h2 className="text-lg font-semibold text-slate-900">No owned businesses found</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            This user can still access the system according to role permissions but has no ownership-linked businesses yet.
+          </p>
+        </section>
+      )}
     </div>
   );
 }

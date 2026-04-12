@@ -10,143 +10,27 @@ import {
 } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
+import { adminBusinesses, getAdminUserById } from '@/app/admin/data/adminDirectoryData';
 
-type BusinessRecord = {
-  id: number;
-  businessName: string;
-  ownerId: number;
-  ownerName: string;
-  country: string;
-  plan: 'Starter' | 'Growth' | 'Professional' | 'Enterprise';
-  status: 'Active' | 'Under Review' | 'Suspended';
-  monthlyRevenue: number;
-  monthlyExpenses: number;
-  netProfit: number;
-  cashBalance: number;
-  receivables: number;
-  payables: number;
-  assets: number;
-  liabilities: number;
-  equity: number;
-  overdueInvoices: number;
-};
-
-const businesses: BusinessRecord[] = [
-  {
-    id: 1,
-    businessName: 'Acme Holdings Ltd',
-    ownerId: 5,
-    ownerName: 'Eric Tuyishime',
-    country: 'Rwanda',
-    plan: 'Professional',
-    status: 'Active',
-    monthlyRevenue: 168400,
-    monthlyExpenses: 113700,
-    netProfit: 54700,
-    cashBalance: 204300,
-    receivables: 58800,
-    payables: 31600,
-    assets: 641500,
-    liabilities: 212000,
-    equity: 429500,
-    overdueInvoices: 4,
-  },
-  {
-    id: 2,
-    businessName: 'Nexa Retail Group Ltd',
-    ownerId: 1,
-    ownerName: 'Aline Niyonsaba',
-    country: 'Rwanda',
-    plan: 'Growth',
-    status: 'Active',
-    monthlyRevenue: 93200,
-    monthlyExpenses: 71800,
-    netProfit: 21400,
-    cashBalance: 121600,
-    receivables: 26500,
-    payables: 14200,
-    assets: 386200,
-    liabilities: 154400,
-    equity: 231800,
-    overdueInvoices: 2,
-  },
-  {
-    id: 3,
-    businessName: 'Kivu Logistics Co',
-    ownerId: 5,
-    ownerName: 'Eric Tuyishime',
-    country: 'Rwanda',
-    plan: 'Enterprise',
-    status: 'Under Review',
-    monthlyRevenue: 126500,
-    monthlyExpenses: 108900,
-    netProfit: 17600,
-    cashBalance: 84700,
-    receivables: 46800,
-    payables: 39500,
-    assets: 493400,
-    liabilities: 272900,
-    equity: 220500,
-    overdueInvoices: 6,
-  },
-  {
-    id: 4,
-    businessName: 'BlueStone Manufacturing',
-    ownerId: 2,
-    ownerName: 'Samuel Uwizeye',
-    country: 'Kenya',
-    plan: 'Enterprise',
-    status: 'Active',
-    monthlyRevenue: 209800,
-    monthlyExpenses: 164200,
-    netProfit: 45600,
-    cashBalance: 174900,
-    receivables: 73400,
-    payables: 58900,
-    assets: 890500,
-    liabilities: 401700,
-    equity: 488800,
-    overdueInvoices: 3,
-  },
-  {
-    id: 5,
-    businessName: 'Peak Foods Distributors',
-    ownerId: 3,
-    ownerName: 'Diane Mutesi',
-    country: 'Uganda',
-    plan: 'Starter',
-    status: 'Suspended',
-    monthlyRevenue: 41200,
-    monthlyExpenses: 49800,
-    netProfit: -8600,
-    cashBalance: 21400,
-    receivables: 15200,
-    payables: 29100,
-    assets: 139500,
-    liabilities: 162200,
-    equity: -22700,
-    overdueInvoices: 9,
-  },
-  {
-    id: 6,
-    businessName: 'Nova Health Services',
-    ownerId: 4,
-    ownerName: 'Jean Claude',
-    country: 'Tanzania',
-    plan: 'Growth',
-    status: 'Active',
-    monthlyRevenue: 102300,
-    monthlyExpenses: 75200,
-    netProfit: 27100,
-    cashBalance: 96400,
-    receivables: 28900,
-    payables: 19700,
-    assets: 341100,
-    liabilities: 138600,
-    equity: 202500,
-    overdueInvoices: 1,
-  },
-];
+const businesses = adminBusinesses.map((business) => ({
+  id: business.id,
+  businessName: business.businessName,
+  ownerId: business.ownerId,
+  ownerName: getAdminUserById(business.ownerId)?.name || 'Unknown Owner',
+  country: business.country,
+  plan: business.subscription,
+  status: business.status,
+  monthlyRevenue: business.financials.monthlyRevenue,
+  monthlyExpenses: business.financials.monthlyExpenses,
+  netProfit: business.financials.netProfit,
+  cashBalance: business.financials.cashBalance,
+  receivables: business.financials.receivables,
+  payables: business.financials.payables,
+  assets: business.financials.assets,
+  liabilities: business.financials.liabilities,
+  equity: business.financials.equity,
+  overdueInvoices: business.financials.overdueInvoices,
+}));
 
 function money(value: number) {
   const sign = value < 0 ? '-' : '';
@@ -210,7 +94,11 @@ export default function AdminBusinessesPage() {
           {
             key: 'businessName',
             label: 'Business',
-            render: (value) => <span className="font-semibold text-slate-900">{value}</span>,
+            render: (value, row) => (
+              <Link href={`/admin/businesses/${row.id}`} className="font-semibold text-slate-900 transition-colors hover:text-green-700">
+                {value}
+              </Link>
+            ),
           },
           {
             key: 'ownerName',
