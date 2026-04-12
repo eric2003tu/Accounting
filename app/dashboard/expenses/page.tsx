@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Building2, Plus, DollarSign, BadgeCheck, Clock3 } from 'lucide-react';
@@ -160,7 +160,7 @@ function buildCategoryData(records: ExpenseRecord[]) {
   return Array.from(totals.entries()).map(([label, value]) => ({ label, value }));
 }
 
-export default function ExpensesPage() {
+function ExpensesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialBusinessId = Number(searchParams.get('businessId'));
@@ -377,5 +377,13 @@ export default function ExpensesPage() {
         /> */}
       </div>
     </div>
+  );
+}
+
+export default function ExpensesPage() {
+  return (
+    <Suspense fallback={<div className="text-slate-600">Loading expenses...</div>}>
+      <ExpensesPageContent />
+    </Suspense>
   );
 }

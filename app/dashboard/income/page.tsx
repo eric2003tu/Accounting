@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Building2, Plus, TrendingUp, BadgeCheck, Clock3 } from 'lucide-react';
@@ -140,7 +140,7 @@ function buildCategoryData(records: IncomeRecord[]) {
   return Array.from(totals.entries()).map(([label, value]) => ({ label, value }));
 }
 
-export default function IncomePage() {
+function IncomePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialBusinessId = Number(searchParams.get('businessId'));
@@ -354,5 +354,13 @@ export default function IncomePage() {
         /> */}
       </div>
     </div>
+  );
+}
+
+export default function IncomePage() {
+  return (
+    <Suspense fallback={<div className="text-slate-600">Loading income...</div>}>
+      <IncomePageContent />
+    </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Building2, Plus, Filter, Receipt, TrendingUp, Wallet } from 'lucide-react';
@@ -218,7 +218,7 @@ const transactionsByBusiness: Record<number, TransactionRecord[]> = {
   ],
 };
 
-export default function TransactionsPage() {
+function TransactionsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialBusinessId = Number(searchParams.get('businessId'));
@@ -547,5 +547,13 @@ export default function TransactionsPage() {
         itemsPerPage={15}
       />
     </div>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={<div className="text-slate-600">Loading transactions...</div>}>
+      <TransactionsPageContent />
+    </Suspense>
   );
 }
