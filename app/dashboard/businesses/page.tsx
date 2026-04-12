@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Building2,
   CircleDollarSign,
@@ -61,6 +62,7 @@ function margin(netProfit: number, revenue: number) {
 }
 
 export default function DashboardBusinessesPage() {
+  const router = useRouter();
   const [businesses, setBusinesses] = useState(initialBusinesses);
   const [businessToDelete, setBusinessToDelete] = useState<(typeof initialBusinesses)[number] | null>(null);
 
@@ -255,6 +257,7 @@ export default function DashboardBusinessesPage() {
             ),
           },
         ]}
+        onRowClick={(row) => router.push(`/dashboard/businesses/${row.id}`)}
         filters={[
           {
             key: 'plan',
