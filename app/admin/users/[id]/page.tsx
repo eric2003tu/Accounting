@@ -175,9 +175,9 @@ function ratio(numerator: number, denominator: number) {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-100 py-3 last:border-b-0 last:pb-0">
+    <div className="flex flex-col gap-1 border-b border-slate-100 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 last:border-b-0 last:pb-0">
       <span className="text-sm text-slate-500">{label}</span>
-      <span className="text-right text-sm font-semibold text-slate-900">{value}</span>
+      <span className="text-sm font-semibold text-slate-900 sm:text-right">{value}</span>
     </div>
   );
 }
@@ -199,8 +199,8 @@ export default async function AdminBusinessOwnerDetailPage({
   const currentRatio = ratio(owner.financials.assets, owner.financials.liabilities);
 
   return (
-    <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] lg:p-6">
+    <div className="space-y-4 sm:space-y-6">
+      <section className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
         <div className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full bg-green-100/70 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-36 w-36 rounded-full bg-emerald-100/50 blur-2xl" />
 
@@ -222,21 +222,21 @@ export default async function AdminBusinessOwnerDetailPage({
             </div>
           </div>
 
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          <div className="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 lg:w-auto lg:max-w-md">
             <div className="flex items-center gap-2 font-semibold">
               <ShieldCheck className="h-4 w-4" />
               Admin snapshot
             </div>
-            <p className="mt-1 text-emerald-800">
+            <p className="mt-1 break-words text-emerald-800">
               Status: {owner.userStatus} · MFA: {owner.mfa} · Last login: {owner.lastLogin}
             </p>
           </div>
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
-        <div className="space-y-6">
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-6">
+      <section className="grid grid-cols-1 gap-4 lg:gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
+        <div className="space-y-4 sm:space-y-6">
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
             <div className="mb-5 flex items-center gap-3">
               <div className="rounded-xl bg-green-100 p-2 text-green-700">
                 <UserRound className="h-5 w-5" />
@@ -247,7 +247,7 @@ export default async function AdminBusinessOwnerDetailPage({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
               <InfoRow label="Full name" value={owner.name} />
               <InfoRow label="Role" value={owner.role} />
               <InfoRow label="Email" value={owner.email} />
@@ -257,7 +257,7 @@ export default async function AdminBusinessOwnerDetailPage({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-6">
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
             <div className="mb-5 flex items-center gap-3">
               <div className="rounded-xl bg-slate-100 p-2 text-slate-700">
                 <Building2 className="h-5 w-5" />
@@ -268,7 +268,7 @@ export default async function AdminBusinessOwnerDetailPage({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
               <InfoRow label="Legal name" value={owner.business.legalName} />
               <InfoRow label="Trade name" value={owner.business.tradeName} />
               <InfoRow label="Tax ID" value={owner.business.taxId} />
@@ -284,8 +284,8 @@ export default async function AdminBusinessOwnerDetailPage({
           </section>
         </div>
 
-        <aside className="space-y-6">
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-6">
+        <aside className="space-y-4 sm:space-y-6 xl:sticky xl:top-6 xl:self-start">
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
             <h3 className="text-base font-semibold text-slate-900">Contact quick actions</h3>
             <div className="mt-4 space-y-3">
               <a
@@ -305,7 +305,7 @@ export default async function AdminBusinessOwnerDetailPage({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-6">
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
             <h3 className="text-base font-semibold text-slate-900">Finance health summary</h3>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between gap-4">
@@ -337,13 +337,13 @@ export default async function AdminBusinessOwnerDetailPage({
         </aside>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
           <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Monthly Revenue</p>
-              <p className="mt-2 text-3xl font-bold text-slate-900 tabular-nums">{money(owner.financials.monthlyRevenue)}</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(owner.financials.monthlyRevenue)}</p>
               <p className="mt-2 text-sm text-slate-600">Current month gross revenue</p>
             </div>
             <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
@@ -352,12 +352,12 @@ export default async function AdminBusinessOwnerDetailPage({
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
+        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
           <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Monthly Expenses</p>
-              <p className="mt-2 text-3xl font-bold text-slate-900 tabular-nums">{money(owner.financials.monthlyExpenses)}</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(owner.financials.monthlyExpenses)}</p>
               <p className="mt-2 text-sm text-slate-600">Current month operating costs</p>
             </div>
             <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
@@ -366,12 +366,12 @@ export default async function AdminBusinessOwnerDetailPage({
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
+        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
           <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Net Profit</p>
-              <p className="mt-2 text-3xl font-bold text-slate-900 tabular-nums">{money(owner.financials.netProfit)}</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(owner.financials.netProfit)}</p>
               <p className="mt-2 text-sm text-slate-600">Margin {profitMargin}</p>
             </div>
             <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
@@ -380,13 +380,14 @@ export default async function AdminBusinessOwnerDetailPage({
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
+        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
           <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Balance Position</p>
-              <p className="mt-2 text-3xl font-bold text-slate-900 tabular-nums">{money(owner.financials.equity)}</p>
-              <p className="mt-2 text-sm text-slate-600">Assets {money(owner.financials.assets)} · Liabilities {money(owner.financials.liabilities)}</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(owner.financials.equity)}</p>
+              <p className="mt-2 text-sm text-slate-600">Assets {money(owner.financials.assets)}</p>
+              <p className="text-sm text-slate-600">Liabilities {money(owner.financials.liabilities)}</p>
             </div>
             <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
               <Scale className="h-6 w-6" />
@@ -395,7 +396,7 @@ export default async function AdminBusinessOwnerDetailPage({
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-2">
         <SimpleChart
           title="Revenue Trend"
           description="Last 6 months performance"
@@ -410,13 +411,13 @@ export default async function AdminBusinessOwnerDetailPage({
         />
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-6">
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
         <div className="mb-4 flex items-center gap-2 text-slate-900">
           <CalendarClock className="h-5 w-5 text-green-700" />
           <h2 className="text-lg font-semibold">Business finance statement snapshot</h2>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Assets</h3>
             <p className="mt-2 text-2xl font-bold text-slate-900">{money(owner.financials.assets)}</p>
