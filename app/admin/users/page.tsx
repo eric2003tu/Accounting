@@ -46,7 +46,18 @@ export default function AdminUsersPage() {
         data={users}
         fileName="admin-users"
         columns={[
-          { key: 'name', label: 'Name' },
+          {
+            key: 'name',
+            label: 'Name',
+            render: (value, row) => (
+              <Link
+                href={`/admin/users/${row.id}`}
+                className="font-medium text-slate-900 transition-colors hover:text-green-700"
+              >
+                {value}
+              </Link>
+            ),
+          },
           { key: 'email', label: 'Email' },
           {
             key: 'role',
