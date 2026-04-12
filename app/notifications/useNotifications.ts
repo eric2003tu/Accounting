@@ -59,11 +59,7 @@ function persistReadIds(ids: number[]) {
 }
 
 export function useNotifications(audience: NotificationAudience) {
-  const [readIds, setReadIds] = useState<number[]>(DEFAULT_READ_IDS);
-
-  useEffect(() => {
-    setReadIds(withDefaultReadIds(readIdsFromStorage()));
-  }, []);
+  const [readIds, setReadIds] = useState<number[]>(() => withDefaultReadIds(readIdsFromStorage()));
 
   useEffect(() => {
     function handleUpdate() {

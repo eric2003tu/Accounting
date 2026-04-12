@@ -57,7 +57,7 @@ export default function DashboardHeader({
         <button
           onClick={onToggleSidebar}
           className="hidden lg:block p-2 hover:bg-slate-100 rounded-lg transition-colors"
-          aria-label="Toggle Sidebar"
+          aria-label={sidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
         >
           <Menu className="h-5 w-5 text-slate-700" />
         </button>
