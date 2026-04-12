@@ -288,75 +288,92 @@ export default function AssignLeaderPage() {
                 </div>
               </div>
 
-              {/* Accountants List */}
-              <div className="space-y-3">
-                {availableAccountants.length === 0 ? (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
-                    <User className="mx-auto mb-2 h-8 w-8 text-slate-400" />
-                    <p className="text-sm font-medium text-slate-600">
-                      {state.searchQuery ? 'No accountants found matching your search.' : 'No active accountants available.'}
-                    </p>
-                  </div>
-                ) : (
-                  availableAccountants.map((accountant) => (
-                    <button
-                      key={accountant.id}
-                      type="button"
-                      onClick={() => handleSelectUser(accountant.id)}
-                      className={`w-full rounded-xl border-2 p-4 text-left transition ${
-                        state.selectedUserId === accountant.id
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-semibold text-slate-900">{accountant.name}</h3>
-                            {accountant.isNewlyCreated && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-                                <Plus className="h-3 w-3" />
-                                New
-                              </span>
-                            )}
-                            {accountant.mfa === 'Enabled' && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                                <BadgeCheck className="h-3 w-3" />
-                                Verified
-                              </span>
-                            )}
-                          </div>
+              {/* Accountants Dropdown */}
+              <div>
+                <label htmlFor="accountant-select" className="block text-sm font-medium text-slate-700 mb-2">
+                  Select an Accountant <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="accountant-select"
+                  value={state.selectedUserId || ''}
+                  onChange={(e) => handleSelectUser(Number(e.target.value))}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                >
+                  <option value="">
+                    {availableAccountants.length === 0 
+                      ? (state.searchQuery ? 'No accountants found' : 'No active accountants available')
+                      : 'Choose an accountant...'}
+                  </option>
+                  {availableAccountants.map((accountant) => (
+                    <option key={accountant.id} value={accountant.id}>
+                      {accountant.name} ({accountant.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                          <div className="mt-2 space-y-1 text-sm text-slate-600">
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4 flex-shrink-0" />
-                              {accountant.email}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 flex-shrink-0" />
-                              {accountant.phone}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Briefcase className="h-4 w-4 flex-shrink-0" />
-                              {accountant.department}
-                            </div>
-                          </div>
-                        </div>
+              {/* Selected Accountant Details Card */}
+              {selectedUser && (
+                <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-5">
+                  <h3 className="mb-4 text-base font-semibold text-slate-900">Accountant Details</h3>
 
-                        <div className="ml-3 flex-shrink-0">
-                          {state.selectedUserId === accountant.id ? (
-                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-600">
-                              <Check className="h-4 w-4 text-white" />
-                            </div>
-                          ) : (
-                            <div className="h-6 w-6 rounded-full border-2 border-slate-300" />
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 rounded-lg bg-white p-4 border border-green-100">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                        <User className="h-6 w-6 text-green-700" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-slate-900">{selectedUser.name}</p>
+                          {selectedUser.isNewlyCreated && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                              <Plus className="h-3 w-3" />
+                              New
+                            </span>
+                          )}
+                          {selectedUser.mfa === 'Enabled' && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                              <BadgeCheck className="h-3 w-3" />
+                              Verified
+                            </span>
                           )}
                         </div>
+                        <p className="text-xs text-slate-600 mt-1">{selectedUser.email}</p>
                       </div>
-                    </button>
-                  ))
-                )}
-              </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="rounded-lg bg-white p-3 border border-slate-200">
+                        <span className="block text-slate-600 text-xs font-medium">Phone</span>
+                        <span className="font-semibold text-slate-900">{selectedUser.phone}</span>
+                      </div>
+                      <div className="rounded-lg bg-white p-3 border border-slate-200">
+                        <span className="block text-slate-600 text-xs font-medium">Department</span>
+                        <span className="font-semibold text-slate-900">{selectedUser.department}</span>
+                      </div>
+                      <div className="rounded-lg bg-white p-3 border border-slate-200">
+                        <span className="block text-slate-600 text-xs font-medium">Status</span>
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-700 font-semibold text-xs">
+                          <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                          {selectedUser.status}
+                        </span>
+                      </div>
+                      <div className="rounded-lg bg-white p-3 border border-slate-200">
+                        <span className="block text-slate-600 text-xs font-medium">MFA Status</span>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          selectedUser.mfa === 'Enabled' 
+                            ? 'bg-green-100 text-green-700' 
+                            : selectedUser.mfa === 'Pending' 
+                            ? 'bg-yellow-100 text-yellow-700' 
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          {selectedUser.mfa}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Create New Accountant Toggle */}
               <button
@@ -472,68 +489,6 @@ export default function AssignLeaderPage() {
 
         {/* Sidebar - Summary */}
         <div className="h-fit space-y-4">
-          {/* Selected Accountant Preview */}
-          {selectedUser && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">Selected Manager</h3>
-
-              <div className="flex items-center gap-3 rounded-xl bg-green-50 p-3 mb-4 border border-green-200">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-                  <User className="h-5 w-5 text-green-700" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-slate-900 truncate">{selectedUser.name}</p>
-                    {selectedUser.isNewlyCreated && (
-                      <span className="whitespace-nowrap inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-                        <Plus className="h-3 w-3" />
-                        New
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-600 truncate">{selectedUser.email}</p>
-                </div>
-              </div>
-
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Role</span>
-                  <span className="font-semibold text-slate-900">{selectedUser.role}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Status</span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-emerald-700 font-semibold text-xs">
-                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                    {selectedUser.status}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Department</span>
-                  <span className="font-semibold text-slate-900">{selectedUser.department}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">MFA Status</span>
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-semibold text-xs ${
-                    selectedUser.mfa === 'Enabled' 
-                      ? 'bg-green-100 text-green-700' 
-                      : selectedUser.mfa === 'Pending' 
-                      ? 'bg-yellow-100 text-yellow-700' 
-                      : 'bg-red-100 text-red-700'
-                  }`}>
-                    <div className={`h-2 w-2 rounded-full ${
-                      selectedUser.mfa === 'Enabled' 
-                        ? 'bg-green-500' 
-                        : selectedUser.mfa === 'Pending' 
-                        ? 'bg-yellow-500' 
-                        : 'bg-red-500'
-                    }`} />
-                    {selectedUser.mfa}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* New Accountant Info Card */}
           {selectedUser && selectedUser.isNewlyCreated && (
             <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
