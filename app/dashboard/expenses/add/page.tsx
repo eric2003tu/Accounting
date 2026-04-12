@@ -9,6 +9,7 @@ import {
   ChevronDown,
   CircleDollarSign,
   CreditCard,
+  Building2,
   FileText,
   Landmark,
   ListChecks,
@@ -18,6 +19,7 @@ import {
   Store,
   Tag,
 } from 'lucide-react';
+import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
 
 const expenseCategories = [
   'Office Supplies',
@@ -46,10 +48,25 @@ const paymentMethods = [
 ];
 
 const taxRates = [0, 5, 7.5, 10, 12.5, 15, 18, 20];
+const currentOwnerId = 5;
+const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
+
+type BusinessOption = {
+  id: string;
+  name: string;
+  legalName: string;
+};
+
+const businessOptions: BusinessOption[] = ownerBusinesses.map((business) => ({
+  id: String(business.id),
+  name: business.businessName,
+  legalName: business.legalName,
+}));
 
 export default function AddExpensePage() {
   const today = new Date().toISOString().slice(0, 10);
 
+  const [selectedBusinessId, setSelectedBusinessId] = useState('');
   const [description, setDescription] = useState('');
   const [vendor, setVendor] = useState('');
   const [amount, setAmount] = useState('');
@@ -66,6 +83,7 @@ export default function AddExpensePage() {
 
   const parsedAmount = Number.parseFloat(amount || '0');
   const parsedTaxRate = Number.parseFloat(taxRate || '0');
+  const selectedBusiness = businessOptions.find((business) => business.id === selectedBusinessId) ?? null;
 
   const { taxAmount, netAmount } = useMemo(() => {
     if (!parsedAmount || !parsedTaxRate) {
@@ -91,6 +109,31 @@ export default function AddExpensePage() {
   }, [isTaxIncluded, parsedAmount, parsedTaxRate]);
 
   const totalWithTax = isTaxIncluded === 'Yes' ? parsedAmount : parsedAmount + taxAmount;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log({
+      businessId: selectedBusinessId,
+      businessName: selectedBusiness?.name ?? '',
+      businessLegalName: selectedBusiness?.legalName ?? '',
+      description,
+      vendor,
+      amount: parsedAmount,
+      currency,
+      category,
+      paymentMethod,
+      taxRate: parsedTaxRate,
+      date,
+      dueDate,
+      status,
+      isTaxIncluded,
+      isRecurring,
+      isReimbursable,
+      netAmount,
+      taxAmount,
+      totalWithTax,
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -125,8 +168,43 @@ export default function AddExpensePage() {
         </div>
       </div>
 
-      <form className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
         <div className="space-y-6">
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-6">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="rounded-xl bg-green-100 p-2 text-green-700">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Business context</h2>
+                <p className="text-sm text-slate-500">Select the company that this expense belongs to.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <label className="space-y-2 md:col-span-2">
+                <span className="text-sm font-medium text-slate-700">Business <span className="text-red-500">*</span></span>
+                <div className="relative">
+                  <select
+                    value={selectedBusinessId}
+                    onChange={(e) => setSelectedBusinessId(e.target.value)}
+                    required
+                    className="w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 py-3 pr-10 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                  >
+                    <option value="">Select a business</option>
+                    {businessOptions.map((business) => (
+                      <option key={business.id} value={business.id}>
+                        {business.name} - {business.legalName}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-5 w-5 text-slate-400" />
+                </div>
+                <p className="text-xs text-slate-500">This keeps the expense tied to the correct legal entity and reports.</p>
+              </label>
+            </div>
+          </section>
+
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-6">
             <div className="mb-5 flex items-center gap-3">
               <div className="rounded-xl bg-green-100 p-2 text-green-700">
@@ -375,6 +453,12 @@ export default function AddExpensePage() {
             </div>
 
             <div className="mt-5 space-y-3 text-sm">
+              <div className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
+                <span className="text-slate-300">Business</span>
+                <span className="max-w-[160px] truncate font-semibold text-white">
+                  {selectedBusiness?.name || 'Not selected'}
+                </span>
+              </div>
               <div className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
                 <span className="text-slate-300">Category</span>
                 <span className="font-semibold text-white">{category}</span>

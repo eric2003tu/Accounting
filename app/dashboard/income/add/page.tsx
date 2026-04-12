@@ -9,6 +9,7 @@ import {
   ChevronDown,
   CircleDollarSign,
   CreditCard,
+  Building2,
   FileText,
   Landmark,
   ListChecks,
@@ -19,6 +20,7 @@ import {
   Tag,
   TrendingUp,
 } from 'lucide-react';
+import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
 
 const incomeCategories = [
   'Service Income',
@@ -45,11 +47,26 @@ const paymentMethods = [
 ];
 
 const taxRates = [0, 5, 7.5, 10, 12.5, 15, 18, 20];
+const currentOwnerId = 5;
+const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
+
+type BusinessOption = {
+  id: string;
+  name: string;
+  legalName: string;
+};
+
+const businessOptions: BusinessOption[] = ownerBusinesses.map((business) => ({
+  id: String(business.id),
+  name: business.businessName,
+  legalName: business.legalName,
+}));
 
 export default function AddIncomePage() {
   const today = new Date().toISOString().slice(0, 10);
 
   // Form state
+  const [selectedBusinessId, setSelectedBusinessId] = useState('');
   const [incomeSource, setIncomeSource] = useState('');
   const [clientName, setClientName] = useState('');
   const [invoiceNo, setInvoiceNo] = useState('');
@@ -70,6 +87,7 @@ export default function AddIncomePage() {
 
   const parsedAmount = Number.parseFloat(amount || '0');
   const parsedTaxRate = Number.parseFloat(taxRate || '0');
+  const selectedBusiness = businessOptions.find((business) => business.id === selectedBusinessId) ?? null;
 
   const { taxAmount, netAmount } = useMemo(() => {
     if (!parsedAmount || !parsedTaxRate) {
@@ -100,6 +118,9 @@ export default function AddIncomePage() {
     e.preventDefault();
     // Handle form submission
     console.log({
+      businessId: selectedBusinessId,
+      businessName: selectedBusiness?.name ?? '',
+      businessLegalName: selectedBusiness?.legalName ?? '',
       incomeSource,
       clientName,
       invoiceNo,
@@ -148,6 +169,40 @@ export default function AddIncomePage() {
 
       {/* Main Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Business Context */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
+          <div className="mb-6 flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-green-700" />
+            <h2 className="text-lg font-semibold text-slate-900">Business context</h2>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label htmlFor="businessId" className="mb-2 block text-sm font-medium text-slate-700">
+                Which business is this for? <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  id="businessId"
+                  value={selectedBusinessId}
+                  onChange={(e) => setSelectedBusinessId(e.target.value)}
+                  required
+                  className="w-full appearance-none rounded-lg border border-slate-300 bg-white px-4 py-3 pr-10 text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
+                >
+                  <option value="">Select a business</option>
+                  {businessOptions.map((business) => (
+                    <option key={business.id} value={business.id}>
+                      {business.name} - {business.legalName}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              </div>
+              <p className="mt-2 text-xs text-slate-500">Choose the legal entity that should receive this income entry.</p>
+            </div>
+          </div>
+        </div>
+
         {/* Income Details Section */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
           <div className="mb-6 flex items-center gap-2">
