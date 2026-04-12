@@ -161,6 +161,13 @@ export default async function DashboardBusinessDetailPage({
             <h3 className="text-base font-semibold text-slate-900">Account quick actions</h3>
             <div className="mt-4 space-y-3">
               <Link
+                href={`/dashboard/businesses/${businessId}/assign-leader`}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-4 text-sm font-bold text-white transition hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl"
+              >
+                <UserRound className="h-5 w-5" />
+                Assign Manager/Accountant
+              </Link>
+              <Link
                 href="/dashboard/profile"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
