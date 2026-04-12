@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Bell, Clock, User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { useNotifications } from '@/app/notifications/useNotifications';
 
 type DashboardHeaderProps = {
   sidebarOpen: boolean;
@@ -16,7 +17,9 @@ export default function DashboardHeader({
   onToggleSidebar,
   onOpenMobileSidebar,
 }: DashboardHeaderProps) {
+  const pathname = usePathname();
   const router = useRouter();
+  const { unreadCount } = useNotifications('dashboard');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +41,8 @@ export default function DashboardHeader({
     localStorage.removeItem('mockAuthUser');
     router.push('/login');
   };
+  const title = pathname === '/dashboard/notifications' ? 'Notifications' : 'Dashboard';
+
   return (
     <header data-dashboard-header className="flex items-center justify-between h-16 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 sticky top-0 z-40">
       {/* Left Section */}
@@ -57,7 +62,7 @@ export default function DashboardHeader({
           <Menu className="h-5 w-5 text-slate-700" />
         </button>
         <div className="flex flex-col">
-          <h1 className="text-base sm:text-lg font-bold text-slate-900">Dashboard</h1>
+          <h1 className="text-base sm:text-lg font-bold text-slate-900">{title}</h1>
           <p className="text-xs text-slate-500 flex items-center gap-1">
             <Clock className="h-3 w-3" />
             <span className="hidden sm:inline">
@@ -80,10 +85,14 @@ export default function DashboardHeader({
       {/* Right Section */}
       <div className="flex items-center gap-2 sm:gap-4">
         {/* Notifications */}
-        <button className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors">
+        <Link href="/dashboard/notifications" className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Notifications">
           <Bell className="h-5 w-5 text-slate-700" />
-          <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-        </button>
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] leading-5 font-semibold text-center">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Link>
 
         {/* User Profile with Dropdown */}
         <div ref={menuRef} className="relative">

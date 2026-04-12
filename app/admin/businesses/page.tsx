@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Building2,
@@ -11,8 +11,9 @@ import {
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import { adminBusinesses, getAdminUserById } from '@/app/admin/data/adminDirectoryData';
+import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
 
-const businesses = adminBusinesses.map((business) => ({
+const initialBusinesses = adminBusinesses.map((business) => ({
   id: business.id,
   businessName: business.businessName,
   ownerId: business.ownerId,
@@ -45,10 +46,24 @@ function margin(netProfit: number, revenue: number) {
 }
 
 export default function AdminBusinessesPage() {
+  const [businesses, setBusinesses] = useState(initialBusinesses);
+  const [businessToDelete, setBusinessToDelete] = useState<(typeof initialBusinesses)[number] | null>(null);
+
   const totalRevenue = businesses.reduce((sum, row) => sum + row.monthlyRevenue, 0);
   const totalProfit = businesses.reduce((sum, row) => sum + row.netProfit, 0);
   const atRisk = businesses.filter((row) => row.overdueInvoices >= 5 || row.netProfit < 0).length;
   const portfolioMargin = margin(totalProfit, totalRevenue);
+
+  const confirmDelete = () => {
+    if (!businessToDelete) {
+      return;
+    }
+
+    setBusinesses((currentBusinesses) =>
+      currentBusinesses.filter((item) => item.id !== businessToDelete.id)
+    );
+    setBusinessToDelete(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -210,6 +225,27 @@ export default function AdminBusinessesPage() {
               </span>
             ),
           },
+          {
+            key: 'id',
+            label: 'Actions',
+            render: (_, row) => (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/admin/businesses/${row.id}`}
+                  className="inline-flex items-center rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  View
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setBusinessToDelete(row)}
+                  className="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                >
+                  Delete
+                </button>
+              </div>
+            ),
+          },
         ]}
         filters={[
           {
@@ -243,6 +279,19 @@ export default function AdminBusinessesPage() {
           },
         ]}
         searchPlaceholder="Search businesses, owners, or financial values..."
+      />
+
+      <DeleteConfirmationModal
+        isOpen={!!businessToDelete}
+        title="Delete business"
+        message={
+          businessToDelete
+            ? `Are you sure you want to delete ${businessToDelete.businessName}? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Yes, delete"
+        onCancel={() => setBusinessToDelete(null)}
+        onConfirm={confirmDelete}
       />
     </div>
   );

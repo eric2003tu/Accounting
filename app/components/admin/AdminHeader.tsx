@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { Menu, Bell, Clock, ShieldCheck, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { useNotifications } from '@/app/notifications/useNotifications';
 
 type AdminHeaderProps = {
   sidebarOpen: boolean;
@@ -22,6 +23,7 @@ const pageTitleByPath: Record<string, string> = {
   '/admin/integrations': 'Integrations',
   '/admin/audit-logs': 'Audit Logs',
   '/admin/reports': 'Admin Reports',
+  '/admin/notifications': 'Notifications',
   '/admin/system': 'System Health',
 };
 
@@ -32,6 +34,7 @@ export default function AdminHeader({
 }: AdminHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { unreadCount } = useNotifications('admin');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -98,10 +101,14 @@ export default function AdminHeader({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
-        <button className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Notifications">
+        <Link href="/admin/notifications" className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Notifications">
           <Bell className="h-5 w-5 text-slate-700" />
-          <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full" />
-        </button>
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] leading-5 font-semibold text-center">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Link>
 
         {/* Admin Profile with Dropdown */}
         <div ref={menuRef} className="relative">
