@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Building2,
   CircleDollarSign,
   TrendingUp,
   AlertTriangle,
+  Plus,
 } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
@@ -84,11 +86,21 @@ export default function DashboardBusinessesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900">My Businesses</h1>
-        <p className="mt-1 text-slate-600">
-          Complete financial visibility across all businesses you own.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">My Businesses</h1>
+          <p className="mt-1 text-slate-600">
+            Complete financial visibility across all businesses you own.
+          </p>
+        </div>
+
+        <Link
+          href="/dashboard/businesses/add"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+        >
+          <Plus className="h-4 w-4" />
+          Add Business
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
