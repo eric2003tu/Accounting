@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   Shield,
   Users,
+  Building2,
   UserCog,
   KeyRound,
   CreditCard,
@@ -27,6 +28,7 @@ type AdminSidebarProps = {
 const menuItems = [
   { name: 'Overview', path: '/admin', icon: Shield },
   { name: 'Users', path: '/admin/users', icon: Users },
+  { name: 'Businesses', path: '/admin/businesses', icon: Building2 },
   { name: 'Roles', path: '/admin/roles', icon: UserCog },
   { name: 'Permissions', path: '/admin/permissions', icon: KeyRound },
   { name: 'Billing', path: '/admin/billing', icon: CreditCard },
