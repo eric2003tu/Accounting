@@ -1,12 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Users, UserCheck, UserX } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
+import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
 
-const users = [
+type AdminUser = {
+  id: number;
+  name: string;
+  email: string;
+  role: 'Owner' | 'Admin' | 'Accountant' | 'Viewer' | 'Support';
+  status: 'Active' | 'Invited' | 'Suspended';
+  mfa: 'Enabled' | 'Pending' | 'Disabled';
+  lastLogin: string;
+};
+
+const initialUsers: AdminUser[] = [
   { id: 1, name: 'Aline Niyonsaba', email: 'aline@acme.com', role: 'Admin', status: 'Active', mfa: 'Enabled', lastLogin: '2026-04-10 08:10' },
   { id: 2, name: 'Samuel Uwizeye', email: 'samuel@acme.com', role: 'Accountant', status: 'Active', mfa: 'Enabled', lastLogin: '2026-04-10 07:55' },
   { id: 3, name: 'Diane Mutesi', email: 'diane@acme.com', role: 'Viewer', status: 'Invited', mfa: 'Pending', lastLogin: '-' },
@@ -15,8 +26,20 @@ const users = [
 ];
 
 export default function AdminUsersPage() {
+  const [users, setUsers] = useState<AdminUser[]>(initialUsers);
+  const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
+
   const active = users.filter((item) => item.status === 'Active').length;
   const suspended = users.filter((item) => item.status === 'Suspended').length;
+
+  const confirmDelete = () => {
+    if (!userToDelete) {
+      return;
+    }
+
+    setUsers((currentUsers) => currentUsers.filter((item) => item.id !== userToDelete.id));
+    setUserToDelete(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -75,6 +98,27 @@ export default function AdminUsersPage() {
           },
           { key: 'mfa', label: 'MFA' },
           { key: 'lastLogin', label: 'Last Login' },
+          {
+            key: 'id',
+            label: 'Actions',
+            render: (_, row) => (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/admin/users/${row.id}`}
+                  className="inline-flex items-center rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  View
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setUserToDelete(row)}
+                  className="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                >
+                  Delete
+                </button>
+              </div>
+            ),
+          },
         ]}
         filters={[
           {
@@ -99,6 +143,19 @@ export default function AdminUsersPage() {
           },
         ]}
         searchPlaceholder="Search users..."
+      />
+
+      <DeleteConfirmationModal
+        isOpen={!!userToDelete}
+        title="Delete user"
+        message={
+          userToDelete
+            ? `Are you sure you want to delete ${userToDelete.name}? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Yes, delete"
+        onCancel={() => setUserToDelete(null)}
+        onConfirm={confirmDelete}
       />
     </div>
   );
