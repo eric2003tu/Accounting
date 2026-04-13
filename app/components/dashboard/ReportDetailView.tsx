@@ -123,6 +123,7 @@ type ReportTemplate =
 
 type ReportDetailViewProps = {
   report: ReportDefinition;
+  businessName: string;
 };
 
 type CsvTable = {
@@ -549,9 +550,10 @@ function SectionTable({
   );
 }
 
-function BalanceSheetView({ data }: { data: BalanceSheetTemplate }) {
+function BalanceSheetView({ data, businessName }: { data: BalanceSheetTemplate; businessName: string }) {
   return (
     <section className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+      <p className="mb-3 text-sm font-semibold text-slate-700">Business: {businessName}</p>
       <div className="border-b border-slate-200 pb-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-700">Financial Statement</p>
         <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -610,9 +612,10 @@ function BalanceSheetView({ data }: { data: BalanceSheetTemplate }) {
   );
 }
 
-function IncomeStatementView({ data }: { data: IncomeStatementTemplate }) {
+function IncomeStatementView({ data, businessName }: { data: IncomeStatementTemplate; businessName: string }) {
   return (
     <section className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+      <p className="mb-3 text-sm font-semibold text-slate-700">Business: {businessName}</p>
       <div className="border-b border-slate-200 pb-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-700">Performance Report</p>
         <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -711,9 +714,10 @@ function IncomeStatementView({ data }: { data: IncomeStatementTemplate }) {
   );
 }
 
-function JournalView({ data }: { data: JournalTemplate }) {
+function JournalView({ data, businessName }: { data: JournalTemplate; businessName: string }) {
   return (
     <section className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+      <p className="mb-3 text-sm font-semibold text-slate-700">Business: {businessName}</p>
       <div className="border-b border-slate-200 pb-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-700">Book of Original Entry</p>
         <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -780,9 +784,10 @@ function JournalView({ data }: { data: JournalTemplate }) {
   );
 }
 
-function CashBookView({ data }: { data: CashBookTemplate }) {
+function CashBookView({ data, businessName }: { data: CashBookTemplate; businessName: string }) {
   return (
     <section className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+      <p className="mb-3 text-sm font-semibold text-slate-700">Business: {businessName}</p>
       <div className="border-b border-slate-200 pb-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-700">Cash Ledger</p>
         <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -875,9 +880,10 @@ function CashBookView({ data }: { data: CashBookTemplate }) {
   );
 }
 
-function TrialBalanceView({ data }: { data: TrialBalanceTemplate }) {
+function TrialBalanceView({ data, businessName }: { data: TrialBalanceTemplate; businessName: string }) {
   return (
     <section className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+      <p className="mb-3 text-sm font-semibold text-slate-700">Business: {businessName}</p>
       <div className="border-b border-slate-200 pb-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-700">Control Report</p>
         <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -1007,24 +1013,24 @@ function buildCsv(report: ReportDefinition): CsvTable {
   }
 }
 
-function TemplateRenderer({ report }: { report: ReportDefinition }) {
+function TemplateRenderer({ report, businessName }: { report: ReportDefinition; businessName: string }) {
   const template = getTemplate(report);
 
   switch (template.kind) {
     case 'Balance Sheet':
-      return <BalanceSheetView data={template.data} />;
+      return <BalanceSheetView data={template.data} businessName={businessName} />;
     case 'Income Statement':
-      return <IncomeStatementView data={template.data} />;
+      return <IncomeStatementView data={template.data} businessName={businessName} />;
     case 'Journal':
-      return <JournalView data={template.data} />;
+      return <JournalView data={template.data} businessName={businessName} />;
     case 'Cash Book':
-      return <CashBookView data={template.data} />;
+      return <CashBookView data={template.data} businessName={businessName} />;
     case 'Trial Balance':
-      return <TrialBalanceView data={template.data} />;
+      return <TrialBalanceView data={template.data} businessName={businessName} />;
   }
 }
 
-export default function ReportDetailView({ report }: ReportDetailViewProps) {
+export default function ReportDetailView({ report, businessName }: ReportDetailViewProps) {
   const Icon = iconMap[report.type];
   const readyForDownload = report.status === 'Ready';
 
@@ -1077,7 +1083,7 @@ export default function ReportDetailView({ report }: ReportDetailViewProps) {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
         <div className="space-y-6">
-          <TemplateRenderer report={report} />
+          <TemplateRenderer report={report} businessName={businessName} />
         </div>
 
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start no-print">

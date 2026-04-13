@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import ReportDetailView from '@/app/components/manager/ReportDetailView';
-import { getReportById } from '../reportData';
+import { getReportById, getReportBusinessName } from '../reportData';
 
 export default async function ReportDetailPage({
   params,
@@ -10,10 +10,11 @@ export default async function ReportDetailPage({
   const { id } = await params;
   const reportId = Number(id);
   const report = getReportById(reportId);
+  const businessName = getReportBusinessName(reportId);
 
   if (!report) {
     notFound();
   }
-  return <ReportDetailView report={report} />;
+  return <ReportDetailView report={report} businessName={businessName} />;
 }
 

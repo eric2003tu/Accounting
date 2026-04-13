@@ -448,3 +448,18 @@ export const reportTypeToSlug = (type: ReportType) => {
 
 export const getReportById = (id: number) => reports.find((report) => report.id === id);
 export const getReportBySlug = (slug: string) => reports.find((report) => report.slug === slug);
+
+const reportBusinessMap: Record<number, string> = {
+  1: 'Acme Holdings Ltd',
+  2: 'Acme Holdings Ltd',
+  3: 'Acme Holdings Ltd',
+  4: 'Acme Holdings Ltd',
+  5: 'Acme Holdings Ltd',
+  6: 'Nexa Retail Group Ltd',
+  7: 'Nexa Retail Group Ltd',
+  8: 'Nexa Retail Group Ltd',
+  9: 'Peak Foods Distributors',
+  10: 'Peak Foods Distributors',
+};
+
+export const getReportBusinessName = (id: number) => reportBusinessMap[id] ?? 'Acme Holdings Ltd';
