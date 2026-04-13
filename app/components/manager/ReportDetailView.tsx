@@ -744,24 +744,26 @@ function JournalView({ data, businessName }: { data: JournalTemplate; businessNa
                 <p className="text-sm text-slate-700">{entry.narration}</p>
               </div>
             </div>
-            <table className="min-w-full text-sm">
-              <thead className="bg-white text-xs uppercase tracking-[0.16em] text-slate-500">
-                <tr>
-                  <th className="px-5 py-3 text-left font-semibold">Account</th>
-                  <th className="px-5 py-3 text-right font-semibold">Debit</th>
-                  <th className="px-5 py-3 text-right font-semibold">Credit</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {entry.lines.map((line) => (
-                  <tr key={`${entry.reference}-${line.account}`}>
-                    <td className="px-5 py-3 font-medium text-slate-900">{line.account}</td>
-                    <td className="px-5 py-3 text-right font-mono text-slate-800 tabular-nums">{line.debit || '-'}</td>
-                    <td className="px-5 py-3 text-right font-mono text-slate-800 tabular-nums">{line.credit || '-'}</td>
+            <div className="overflow-x-auto">
+              <table className="min-w-[560px] text-sm sm:min-w-full">
+                <thead className="bg-white text-xs uppercase tracking-[0.16em] text-slate-500">
+                  <tr>
+                    <th className="px-5 py-3 text-left font-semibold">Account</th>
+                    <th className="px-5 py-3 text-right font-semibold">Debit</th>
+                    <th className="px-5 py-3 text-right font-semibold">Credit</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {entry.lines.map((line) => (
+                    <tr key={`${entry.reference}-${line.account}`}>
+                      <td className="px-5 py-3 font-medium text-slate-900">{line.account}</td>
+                      <td className="px-5 py-3 text-right font-mono text-slate-800 tabular-nums">{line.debit || '-'}</td>
+                      <td className="px-5 py-3 text-right font-mono text-slate-800 tabular-nums">{line.credit || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </article>
         ))}
       </div>
@@ -802,10 +804,11 @@ function CashBookView({ data, businessName }: { data: CashBookTemplate; business
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <DetailCard title="Receipts" subtitle="Money coming into the business.">
-          <div className="overflow-hidden rounded-2xl border border-slate-200">
-            <table className="min-w-full text-sm">
+      <div className="mt-6 overflow-x-auto">
+        <div className="grid min-w-[680px] gap-6 xl:min-w-0 xl:grid-cols-2">
+          <DetailCard title="Receipts" subtitle="Money coming into the business.">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+            <table className="min-w-[640px] text-sm sm:min-w-full">
               <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold">Date</th>
@@ -830,11 +833,11 @@ function CashBookView({ data, businessName }: { data: CashBookTemplate; business
               </tbody>
             </table>
           </div>
-        </DetailCard>
+          </DetailCard>
 
-        <DetailCard title="Payments" subtitle="Money going out of the business.">
-          <div className="overflow-hidden rounded-2xl border border-slate-200">
-            <table className="min-w-full text-sm">
+          <DetailCard title="Payments" subtitle="Money going out of the business.">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+            <table className="min-w-[640px] text-sm sm:min-w-full">
               <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold">Date</th>
@@ -859,7 +862,8 @@ function CashBookView({ data, businessName }: { data: CashBookTemplate; business
               </tbody>
             </table>
           </div>
-        </DetailCard>
+          </DetailCard>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -898,8 +902,8 @@ function TrialBalanceView({ data, businessName }: { data: TrialBalanceTemplate; 
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white">
-        <table className="min-w-full text-sm">
+      <div className="mt-6 overflow-x-auto rounded-3xl border border-slate-200 bg-white">
+        <table className="min-w-[560px] text-sm sm:min-w-full">
           <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
             <tr>
               <th className="px-5 py-3 text-left font-semibold">Account</th>
@@ -1043,7 +1047,7 @@ export default function ReportDetailView({ report, businessName }: ReportDetailV
   };
 
   return (
-    <div className="space-y-6" data-report-printable>
+    <div className="space-y-6 overflow-x-hidden" data-report-printable>
       <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)] sm:p-6 lg:flex-row lg:items-end lg:justify-between no-print">
         <div className="space-y-3">
           <Link
@@ -1082,7 +1086,7 @@ export default function ReportDetailView({ report, businessName }: ReportDetailV
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <TemplateRenderer report={report} businessName={businessName} />
         </div>
 
