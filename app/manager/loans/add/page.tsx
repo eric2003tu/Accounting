@@ -40,6 +40,7 @@ export default function AddManagerLoanPage() {
   const [counterpartyName, setCounterpartyName] = useState('');
   const [counterpartyType, setCounterpartyType] = useState('Bank');
   const [purpose, setPurpose] = useState('');
+  const [productName, setProductName] = useState('');
   const [currency, setCurrency] = useState('USD');
   const [principal, setPrincipal] = useState('');
   const [interestRate, setInterestRate] = useState('12');
@@ -119,6 +120,7 @@ export default function AddManagerLoanPage() {
       counterpartyName,
       counterpartyType,
       purpose,
+      productName,
       currency,
       principal: parsedPrincipal,
       interestRate: parsedRate,
@@ -300,6 +302,20 @@ export default function AddManagerLoanPage() {
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-5 w-5 text-slate-400" />
                 </div>
+              </label>
+
+              <label className="space-y-2 md:col-span-2">
+                <span className="text-sm font-medium text-slate-700">
+                  {direction === 'offered' ? 'Product Name' : 'Use of Funds'} <span className="text-red-500">*</span>
+                </span>
+                <input
+                  type="text"
+                  value={productName}
+                  onChange={(event) => setProductName(event.target.value)}
+                  required
+                  placeholder={direction === 'offered' ? 'Example: POS Equipment Bundle' : 'Example: Working capital support'}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                />
               </label>
             </div>
           </section>
