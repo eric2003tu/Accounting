@@ -7,7 +7,7 @@ import Footer from './Footer';
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hideGlobalChrome =
-    pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
+    pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/manager');
 
   return (
     <>

@@ -9,7 +9,7 @@ import { Eye, EyeOff } from 'lucide-react';
 type MockUser = {
   email: string;
   password: string;
-  role: 'admin' | 'business_owner';
+  role: 'admin' | 'business_owner' | 'manager';
   label: string;
 };
 
@@ -26,20 +26,26 @@ const mockUsers: MockUser[] = [
     role: 'business_owner',
     label: 'Business Owner',
   },
+  {
+    email: 'manager@accounting.app',
+    password: 'Manager@123',
+    role: 'manager',
+    label: 'Business Manager',
+  },
 ];
 
 export default function LoginPage() {
   const router = useRouter();
-  const defaultRole: 'admin' | 'business_owner' = 'business_owner';
+  const defaultRole: 'admin' | 'business_owner' | 'manager' = 'business_owner';
   const defaultUser = mockUsers.find((user) => user.role === defaultRole)!;
 
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'business_owner'>(defaultRole);
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'business_owner' | 'manager'>(defaultRole);
   const [email, setEmail] = useState(defaultUser.email);
   const [password, setPassword] = useState(defaultUser.password);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const applyRoleCredentials = (role: 'admin' | 'business_owner') => {
+  const applyRoleCredentials = (role: 'admin' | 'business_owner' | 'manager') => {
     const user = mockUsers.find((item) => item.role === role);
     if (!user) {
       return;
@@ -81,6 +87,11 @@ export default function LoginPage() {
       return;
     }
 
+    if (match.role === 'manager') {
+      router.push('/manager');
+      return;
+    }
+
     router.push('/dashboard');
   };
 
@@ -106,13 +117,16 @@ export default function LoginPage() {
                 <p>
                   <span className="font-semibold text-slate-900">Business Owner:</span> owner@accounting.app / Owner@123
                 </p>
+                <p>
+                  <span className="font-semibold text-slate-900">Business Manager:</span> manager@accounting.app / Manager@123
+                </p>
               </div>
             </div>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <div>
                 <p className="mb-2 block text-sm font-medium text-slate-700">Login as</p>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <label className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition ${selectedRole === 'business_owner' ? 'border-green-500 bg-green-50 text-green-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}>
                     <input
                       type="radio"
@@ -134,6 +148,17 @@ export default function LoginPage() {
                       className="h-4 w-4 border-slate-300 text-green-600 focus:ring-green-500"
                     />
                     System Admin
+                  </label>
+                  <label className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition ${selectedRole === 'manager' ? 'border-green-500 bg-green-50 text-green-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="manager"
+                      checked={selectedRole === 'manager'}
+                      onChange={() => applyRoleCredentials('manager')}
+                      className="h-4 w-4 border-slate-300 text-green-600 focus:ring-green-500"
+                    />
+                    Manager
                   </label>
                 </div>
               </div>
