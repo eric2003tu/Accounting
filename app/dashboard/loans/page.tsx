@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Suspense } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Building2,
@@ -9,6 +10,7 @@ import {
   HandCoins,
   Landmark,
   Percent,
+  Plus,
   ShieldAlert,
   TrendingUp,
   Users,
@@ -531,6 +533,13 @@ function LoansPageContent() {
               ))}
             </select>
             <p className="mt-2 text-sm text-slate-600">{selectedBusiness.legalName} · {selectedBusiness.industry}</p>
+            <Link
+              href="/dashboard/loans/add"
+              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Loan
+            </Link>
           </div>
         </div>
 

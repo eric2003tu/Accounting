@@ -1,12 +1,14 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import {
   CalendarClock,
   CircleDollarSign,
   HandCoins,
   Landmark,
   Percent,
+  Plus,
   ShieldAlert,
   TrendingUp,
   Users,
@@ -460,6 +462,13 @@ export default function ManagerLoansPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Assigned business</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">{managerBusiness.businessName}</p>
             <p className="text-xs text-slate-600">{managerBusiness.legalName}</p>
+            <Link
+              href="/manager/loans/add"
+              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Loan
+            </Link>
           </div>
         </div>
 
