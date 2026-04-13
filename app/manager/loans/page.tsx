@@ -593,7 +593,7 @@ export default function ManagerLoansPage() {
               { key: 'riskLevel', label: 'Risk', options: [{ label: 'Low', value: 'Low' }, { label: 'Medium', value: 'Medium' }, { label: 'High', value: 'High' }] },
               { key: 'repaymentStatus', label: 'Repayment', options: [{ label: 'Completed', value: 'Completed' }, { label: 'Partially Paid', value: 'Partially Paid' }, { label: 'Not Paid', value: 'Not Paid' }] },
             ]}
-            searchPlaceholder="Search lender, facility, payment status, or terms..."
+            searchPlaceholder="Search lender, facility, repayment status, or terms..."
             itemsPerPage={8}
           />
         </>
