@@ -22,7 +22,7 @@ function maskEmail(email: string) {
 export default function VerifyOtpPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get('email') ?? 'your email';
+  const email = searchParams.get('email') ?? 'erictuyishime574@gmail.com';
 
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [isVerifying, setIsVerifying] = useState(false);
@@ -142,7 +142,7 @@ export default function VerifyOtpPage() {
   };
 
   return (
-    <section className="h-full overflow-hidden bg-white px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+    <section className="h-full overflow-hidden bg-white px-4 py-3 sm:px-6 sm:py-4 lg:px-6">
       <div className="mx-auto flex h-full w-full max-w-3xl items-center">
         <div className="w-full rounded-2xl border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.12)]">
         <div className="rounded-t-2xl border-b border-slate-200 bg-gradient-to-r from-green-50 via-white to-slate-50 px-6 py-6 sm:px-8">
@@ -165,7 +165,7 @@ export default function VerifyOtpPage() {
           </p>
         </div>
 
-        <div className="px-6 py-6 sm:px-8 sm:py-7">
+        <div className="px-6 py-4 sm:px-8 sm:py-7">
           <form onSubmit={handleVerify} className="space-y-6">
             <div>
               <label className="mb-3 block text-sm font-medium text-slate-700">One-time passcode</label>
