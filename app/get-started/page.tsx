@@ -3,10 +3,35 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function GetStartedPage() {
+  const router = useRouter();
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!acceptedTerms || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    localStorage.setItem(
+      'pendingRegistration',
+      JSON.stringify({
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
+      })
+    );
+
+    router.push(`/verrify-otp?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+  };
 
   return (
     <section className="h-[calc(100svh-8.5rem)] min-h-[680px] bg-white px-4 py-4 sm:px-6 lg:px-8">
@@ -21,7 +46,7 @@ export default function GetStartedPage() {
               Set up your workspace and start managing your business finances with confidence.
             </p>
 
-            <form className="mt-6 space-y-4" action="#" method="post">
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-slate-700">
                   Full name
@@ -32,6 +57,8 @@ export default function GetStartedPage() {
                   type="text"
                   required
                   placeholder="Jane Doe"
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
                   className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
                 />
               </div>
@@ -46,6 +73,8 @@ export default function GetStartedPage() {
                   type="email"
                   required
                   placeholder="you@company.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                   className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
                 />
               </div>
@@ -61,6 +90,8 @@ export default function GetStartedPage() {
                     type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="Create a strong password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                     className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-12 text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
                   />
                   <button
@@ -75,15 +106,22 @@ export default function GetStartedPage() {
               </div>
 
               <label className="flex items-start gap-2 text-sm text-slate-600">
-                <input type="checkbox" required className="mt-0.5 h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500" />
+                <input
+                  type="checkbox"
+                  required
+                  checked={acceptedTerms}
+                  onChange={(event) => setAcceptedTerms(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500"
+                />
                 I agree to the Terms of Service and Privacy Policy.
               </label>
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-green-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-green-700"
+                disabled={isSubmitting}
+                className="w-full rounded-lg bg-green-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-green-400"
               >
-                Create Account
+                {isSubmitting ? 'Sending OTP...' : 'Create Account'}
               </button>
             </form>
 
