@@ -42,6 +42,7 @@ export default function AddLoanPage() {
   const [direction, setDirection] = useState<LoanDirection>('received');
   const [reference, setReference] = useState('');
   const [counterpartyName, setCounterpartyName] = useState('');
+  const [borrowerPhone, setBorrowerPhone] = useState('');
   const [counterpartyType, setCounterpartyType] = useState('Bank');
   const [purpose, setPurpose] = useState('');
   const [productName, setProductName] = useState('');
@@ -119,6 +120,7 @@ export default function AddLoanPage() {
       direction,
       reference,
       counterpartyName,
+      borrowerPhone,
       counterpartyType,
       purpose,
       productName,
@@ -270,6 +272,21 @@ export default function AddLoanPage() {
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-200"
                 />
               </label>
+
+              {direction === 'offered' && (
+                <label className="space-y-2">
+                  <span className="text-sm font-medium text-slate-700">Borrower Phone Number <span className="text-red-500">*</span></span>
+                  <input
+                    type="tel"
+                    value={borrowerPhone}
+                    onChange={(event) => setBorrowerPhone(event.target.value)}
+                    required={direction === 'offered'}
+                    placeholder="Example: +250788123456"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                  />
+                  <p className="text-xs text-slate-500">Used for repayment reminders and due-date notifications.</p>
+                </label>
+              )}
 
               <label className="space-y-2">
                 <span className="text-sm font-medium text-slate-700">{direction === 'received' ? 'Lender Type' : 'Borrower Type'}</span>
