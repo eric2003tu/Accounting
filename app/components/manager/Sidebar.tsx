@@ -8,6 +8,7 @@ import {
   Send,
   TrendingUp,
   DollarSign,
+  Landmark,
   Building2,
   BookOpen,
   BarChart3,
@@ -45,6 +46,12 @@ const menuItems = [
     name: 'Expenses',
     path: '/manager/expenses',
     icon: DollarSign,
+    badge: undefined,
+  },
+  {
+    name: 'Loans',
+    path: '/manager/loans',
+    icon: Landmark,
     badge: undefined,
   },
   {
