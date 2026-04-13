@@ -708,12 +708,12 @@ export default function ManagerLoansPage() {
       )}
 
       {currentEditingPayment && editingKind && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-          <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.25)]">
-            <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
-              <div>
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/55 p-2 sm:items-center sm:p-4">
+          <div className="my-4 w-full max-w-2xl max-h-[calc(100vh-1rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.25)] sm:my-0 sm:max-h-[90vh]">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-6 sm:py-4">
+              <div className="min-w-0 pr-2">
                 <h3 className="text-lg font-semibold text-slate-900">Update Loan Payment</h3>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 break-words text-xs text-slate-600 sm:text-sm">
                   {editingKind === 'received' ? 'Debt service update' : 'Customer collection update'} · Ref{' '}
                   {'facilityRef' in currentEditingPayment ? currentEditingPayment.facilityRef : currentEditingPayment.accountRef}
                 </p>
@@ -721,13 +721,13 @@ export default function ManagerLoansPage() {
               <button
                 type="button"
                 onClick={closePaymentModal}
-                className="rounded-md px-2 py-1 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                className="shrink-0 rounded-md px-2 py-1 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
               >
                 Close
               </button>
             </div>
 
-            <div className="grid gap-4 px-5 py-5 sm:grid-cols-2 sm:px-6">
+            <div className="grid max-h-[calc(100vh-11rem)] gap-4 overflow-y-auto px-4 py-4 sm:max-h-[calc(90vh-10rem)] sm:grid-cols-2 sm:px-6 sm:py-5">
               <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Total Due</p>
                 <p className="mt-1 font-semibold text-slate-900">{money(currentEditingPayment.totalDue)}</p>
@@ -824,18 +824,18 @@ export default function ManagerLoansPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 border-t border-slate-200 px-5 py-4 sm:px-6">
+            <div className="flex flex-col-reverse gap-2 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-end sm:px-6 sm:py-4">
               <button
                 type="button"
                 onClick={closePaymentModal}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={submitPaymentUpdate}
-                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+                className="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 sm:w-auto"
               >
                 Save Payment Update
               </button>
