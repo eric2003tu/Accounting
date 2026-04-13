@@ -112,7 +112,7 @@ export default function AdminSidebar({ isOpen, mobileOpen, onClose }: AdminSideb
 
         <div className="border-t border-slate-800 p-3 flex-none">
           <ul className="space-y-2">
-            <li>
+            {/* <li>
               <Link
                 href="/dashboard"
                 onClick={onClose}
@@ -122,7 +122,7 @@ export default function AdminSidebar({ isOpen, mobileOpen, onClose }: AdminSideb
                 <ArrowLeftRight className="h-5 w-5 flex-shrink-0" />
                 {isOpen && <span>Business Dashboard</span>}
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link
                 href="/login"
