@@ -160,13 +160,13 @@ export default async function DashboardBusinessDetailPage({
           <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
             <h3 className="text-base font-semibold text-slate-900">Account quick actions</h3>
             <div className="mt-4 space-y-3">
-              <Link
+              {/* <Link
                 href={`/manager/businesses/${businessId}/assign-leader`}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-4 text-sm font-bold text-white transition hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl"
               >
                 <UserRound className="h-5 w-5" />
                 Assign Manager/Accountant
-              </Link>
+              </Link> */}
               <Link
                 href="/manager/profile"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"

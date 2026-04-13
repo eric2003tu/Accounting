@@ -151,7 +151,7 @@ export default function ManagerDashboardPage() {
         </div>
       </div>
 
-      <div>
+      {/* <div>
         <h2 className="mb-4 text-lg font-semibold text-slate-900">Quick Actions</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <QuickActionButton icon={Plus} label="New Transaction" description="Record a transaction" variant="primary" />
@@ -159,7 +159,7 @@ export default function ManagerDashboardPage() {
           <QuickActionButton icon={TrendingUp} label="Income Entry" description="Log new revenue" />
           <QuickActionButton icon={Target} label="Expense Entry" description="Capture operating costs" />
         </div>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
