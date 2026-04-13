@@ -247,7 +247,7 @@ function IncomePageContent() {
       </Link>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SimpleChart
           title="Income by Category"
           description="Distribution of income sources"
@@ -260,7 +260,7 @@ function IncomePageContent() {
           data={monthlyIncome}
           type="bar"
         />
-      </div>
+      </div> */}
 
       {/* Summary and Table */}
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
