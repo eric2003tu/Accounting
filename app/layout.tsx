@@ -1,10 +1,7 @@
-'use client';
-
-import { usePathname } from "next/navigation";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "./components/NavBar";
-import Footer from "./components/Footer";
+import AppShell from "@/app/components/AppShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,24 +13,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const metadata: Metadata = {
+  title: "AccPlan - Accounting and Business Management Platform",
+  description: "Accounting app dashboard and business management platform",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const hideGlobalChrome =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
-
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {!hideGlobalChrome && <NavBar />}
-        <main className="flex-1">{children}</main>
-        {!hideGlobalChrome && <Footer />}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
