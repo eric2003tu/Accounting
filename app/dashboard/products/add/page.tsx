@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCreateForm from '@/app/components/products/ProductCreateForm';
 import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
@@ -9,7 +9,7 @@ const currentOwnerId = 5;
 
 const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
 
-export default function AddProductPage() {
+function AddProductPageContent() {
   const searchParams = useSearchParams();
   const initialBusinessId = searchParams.get('businessId') ?? '';
 
@@ -31,5 +31,13 @@ export default function AddProductPage() {
       businesses={businessOptions}
       defaultBusinessId={safeDefaultBusinessId}
     />
+  );
+}
+
+export default function AddProductPage() {
+  return (
+    <Suspense fallback={<div className="text-slate-600">Loading add product form...</div>}>
+      <AddProductPageContent />
+    </Suspense>
   );
 }
