@@ -123,7 +123,7 @@ export default function AdminSidebar({ isOpen, mobileOpen, onClose }: AdminSideb
                 {isOpen && <span>Business Dashboard</span>}
               </Link>
             </li> */}
-            <li>
+            {/* <li>
               <Link
                 href="/login"
                 onClick={onClose}
@@ -133,7 +133,7 @@ export default function AdminSidebar({ isOpen, mobileOpen, onClose }: AdminSideb
                 <LogOut className="h-5 w-5 flex-shrink-0" />
                 {isOpen && <span>Logout</span>}
               </Link>
-            </li>
+            </li> */}
           </ul>
         </div>
       </aside>
