@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { FileText, Download, BadgeCheck, CalendarClock, BookText, Scale, Wallet, Building2 } from 'lucide-react';
+import { FileText, Download, BadgeCheck, CalendarClock, BookText, Scale, Wallet, Building2, BookOpen } from 'lucide-react';
 import StatCard from '@/app/components/manager/StatCard';
 import DataTable from '@/app/components/manager/DataTable';
 import { reports as reportItems, reportButtons } from './reportData';
@@ -24,10 +24,14 @@ const reportBusinessMap: Record<number, string> = {
   8: 'nexa',
   9: 'peak',
   10: 'peak',
+  11: 'acme',
+  12: 'acme',
+  13: 'nexa',
+  14: 'peak',
 };
 
 export default function ManagerReportsPage() {
-  const [activeView, setActiveView] = useState<'all' | 'balance-sheet' | 'income-statement' | 'journal' | 'cash-book'>('all');
+  const [activeView, setActiveView] = useState<'all' | 'balance-sheet' | 'income-statement' | 'journal' | 'ledger' | 'cash-book'>('all');
 
   const scopedReports = useMemo(
     () => reportItems.filter((report) => (reportBusinessMap[report.id] ?? 'acme') === managerBusiness.id),
@@ -36,7 +40,6 @@ export default function ManagerReportsPage() {
 
   const readyReports = scopedReports.filter((report) => report.status === 'Ready').length;
   const processingReports = scopedReports.filter((report) => report.status === 'Processing').length;
-
   const visibleReports = scopedReports.filter((report) => {
     switch (activeView) {
       case 'balance-sheet':
@@ -45,6 +48,8 @@ export default function ManagerReportsPage() {
         return report.type === 'Income Statement';
       case 'journal':
         return report.type === 'Journal';
+      case 'ledger':
+        return report.type === 'Ledger';
       case 'cash-book':
         return report.type === 'Cash Book';
       default:
@@ -57,6 +62,7 @@ export default function ManagerReportsPage() {
     Scale,
     BadgeCheck,
     BookText,
+    BookOpen,
     Wallet,
   };
 
@@ -85,18 +91,7 @@ export default function ManagerReportsPage() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <StatCard
-          title="Total Reports"
-          value={scopedReports.length}
-          description={`Generated for ${managerBusiness.name}`}
-          icon={FileText}
-        />
-        <StatCard title="Ready Reports" value={readyReports} description="Available to download" icon={BadgeCheck} />
-        <StatCard title="In Progress" value={processingReports} description="Still processing" icon={CalendarClock} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
         {reportButtons.map((button) => {
           const Icon = iconMap[button.icon];
           const active = activeView === button.key;
@@ -122,6 +117,17 @@ export default function ManagerReportsPage() {
             </button>
           );
         })}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <StatCard
+          title="Total Reports"
+          value={scopedReports.length}
+          description={`Generated for ${managerBusiness.name}`}
+          icon={FileText}
+        />
+        <StatCard title="Ready Reports" value={readyReports} description="Available to download" icon={BadgeCheck} />
+        <StatCard title="In Progress" value={processingReports} description="Still processing" icon={CalendarClock} />
       </div>
 
       <DataTable
@@ -184,6 +190,7 @@ export default function ManagerReportsPage() {
               { label: 'Balance Sheet', value: 'Balance Sheet' },
               { label: 'Income Statement', value: 'Income Statement' },
               { label: 'Journal', value: 'Journal' },
+              { label: 'Ledger', value: 'Ledger' },
               { label: 'Cash Book', value: 'Cash Book' },
               { label: 'Trial Balance', value: 'Trial Balance' },
             ],

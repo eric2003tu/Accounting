@@ -1,4 +1,4 @@
-export type ReportType = 'Balance Sheet' | 'Income Statement' | 'Journal' | 'Cash Book' | 'Trial Balance';
+export type ReportType = 'Balance Sheet' | 'Income Statement' | 'Journal' | 'Ledger' | 'Cash Book' | 'Trial Balance';
 
 export type ReportSummaryStat = {
   label: string;
@@ -288,6 +288,170 @@ export const reports: ReportDefinition[] = [
     ],
   },
   {
+    id: 11,
+    slug: 'general-ledger-q1-2024',
+    name: 'General Ledger',
+    type: 'Ledger',
+    status: 'Ready',
+    period: 'Q1 2024',
+    generatedAt: '2024-04-11',
+    summary: 'Chronological ledger activity for Acme Holdings Ltd during Q1 2024.',
+    overview: 'A standard ledger extract showing the account postings recorded during the quarter.',
+    summaryStats: [
+      { label: 'Opening Balance', value: '$18,864.50', description: 'Start of period ledger balance' },
+      { label: 'Total Debits', value: '$21,500.00', description: 'Debit-side postings' },
+      { label: 'Total Credits', value: '$6,435.50', description: 'Credit-side postings' },
+    ],
+    sections: [
+      {
+        title: 'Ledger Scope',
+        description: 'Core accounts included in this extract',
+        items: [
+          { label: 'Income - Services', value: 'Revenue postings' },
+          { label: 'Expenses - Supplies', value: 'Operating expenses' },
+          { label: 'Fixed Assets', value: 'Capital purchases' },
+        ],
+      },
+      {
+        title: 'Control Check',
+        description: 'Ledger entries reconcile to a running balance',
+        items: [
+          { label: 'Status', value: 'Balanced' },
+          { label: 'Closing Balance', value: '$33,929.00' },
+        ],
+      },
+    ],
+    rows: [
+      { date: '2024-04-11', reference: 'LG-001', description: 'Service invoice posted', debit: '$15,000.00', balance: '$33,864.50' },
+      { date: '2024-04-11', reference: 'LG-002', description: 'Office supplies purchase', credit: '$245.50', balance: '$33,619.00' },
+      { date: '2024-04-11', reference: 'LG-003', description: 'Equipment acquisition', credit: '$890.00', balance: '$32,729.00' },
+      { date: '2024-04-11', reference: 'LG-004', description: 'Owner contribution', debit: '$1,200.00', balance: '$33,929.00' },
+    ],
+  },
+  {
+    id: 12,
+    slug: 'general-ledger-q2-2024',
+    name: 'General Ledger',
+    type: 'Ledger',
+    status: 'Ready',
+    period: 'Q2 2024',
+    generatedAt: '2024-07-11',
+    summary: 'Chronological ledger activity for Acme Holdings Ltd during Q2 2024.',
+    overview: 'Quarter-end ledger extract with the largest account movements captured in one view.',
+    summaryStats: [
+      { label: 'Opening Balance', value: '$33,929.00', description: 'Start of period ledger balance' },
+      { label: 'Total Debits', value: '$29,300.00', description: 'Debit-side postings' },
+      { label: 'Total Credits', value: '$11,220.00', description: 'Credit-side postings' },
+    ],
+    sections: [
+      {
+        title: 'Ledger Scope',
+        description: 'High-activity accounts in the quarter',
+        items: [
+          { label: 'Sales Revenue', value: 'Revenue postings' },
+          { label: 'Bank Loan Payable', value: 'Financing movements' },
+          { label: 'Accounts Receivable', value: 'Customer settlements' },
+        ],
+      },
+      {
+        title: 'Control Check',
+        description: 'Quarter-end balance review',
+        items: [
+          { label: 'Status', value: 'Balanced' },
+          { label: 'Closing Balance', value: '$52,009.00' },
+        ],
+      },
+    ],
+    rows: [
+      { date: '2024-07-11', reference: 'LG-101', description: 'Customer receipt applied', debit: '$12,000.00', balance: '$45,929.00' },
+      { date: '2024-07-11', reference: 'LG-102', description: 'Rent payment', credit: '$4,500.00', balance: '$41,429.00' },
+      { date: '2024-07-11', reference: 'LG-103', description: 'Loan proceeds received', debit: '$20,000.00', balance: '$61,429.00' },
+      { date: '2024-07-11', reference: 'LG-104', description: 'Tax remittance', credit: '$9,420.00', balance: '$52,009.00' },
+    ],
+  },
+  {
+    id: 13,
+    slug: 'retail-ledger-q2-2024',
+    name: 'General Ledger',
+    type: 'Ledger',
+    status: 'Ready',
+    period: 'Q2 2024',
+    generatedAt: '2024-07-12',
+    summary: 'Ledger extract for Nexa Retail Group Ltd covering Q2 2024 posting activity.',
+    overview: 'Retail and distribution postings grouped into a chronological ledger statement.',
+    summaryStats: [
+      { label: 'Opening Balance', value: '$26,410.00', description: 'Start of period ledger balance' },
+      { label: 'Total Debits', value: '$18,760.00', description: 'Debit-side postings' },
+      { label: 'Total Credits', value: '$9,120.00', description: 'Credit-side postings' },
+    ],
+    sections: [
+      {
+        title: 'Ledger Scope',
+        description: 'Retail activity captured in the ledger',
+        items: [
+          { label: 'Inventory', value: 'Stock movements' },
+          { label: 'Trade Payables', value: 'Supplier settlements' },
+          { label: 'Cash', value: 'Store receipts' },
+        ],
+      },
+      {
+        title: 'Control Check',
+        description: 'Ledger totals remain in balance',
+        items: [
+          { label: 'Status', value: 'Balanced' },
+          { label: 'Closing Balance', value: '$36,050.00' },
+        ],
+      },
+    ],
+    rows: [
+      { date: '2024-07-12', reference: 'LG-201', description: 'Store cash deposits', debit: '$8,500.00', balance: '$34,910.00' },
+      { date: '2024-07-12', reference: 'LG-202', description: 'Supplier payment', credit: '$3,120.00', balance: '$31,790.00' },
+      { date: '2024-07-12', reference: 'LG-203', description: 'Inventory restock', credit: '$6,000.00', balance: '$25,790.00' },
+      { date: '2024-07-12', reference: 'LG-204', description: 'Bank adjustment', debit: '$10,260.00', balance: '$36,050.00' },
+    ],
+  },
+  {
+    id: 14,
+    slug: 'distribution-ledger-q2-2024',
+    name: 'General Ledger',
+    type: 'Ledger',
+    status: 'Processing',
+    period: 'Q2 2024',
+    generatedAt: '2024-07-13',
+    summary: 'Ledger extract for Peak Foods Distributors currently finishing processing.',
+    overview: 'Distribution ledger activity captured for close review before sign-off.',
+    summaryStats: [
+      { label: 'Opening Balance', value: '$41,200.00', description: 'Start of period ledger balance' },
+      { label: 'Total Debits', value: '$15,000.00', description: 'Debit-side postings' },
+      { label: 'Total Credits', value: '$7,480.00', description: 'Credit-side postings' },
+    ],
+    sections: [
+      {
+        title: 'Ledger Scope',
+        description: 'Distribution movements captured in the extract',
+        items: [
+          { label: 'Accounts Receivable', value: 'Customer collections' },
+          { label: 'Inventory', value: 'Warehouse movements' },
+          { label: 'Cash', value: 'Settlement activity' },
+        ],
+      },
+      {
+        title: 'Control Check',
+        description: 'Processing status before final posting',
+        items: [
+          { label: 'Status', value: 'Processing' },
+          { label: 'Provisional Closing Balance', value: '$48,720.00' },
+        ],
+      },
+    ],
+    rows: [
+      { date: '2024-07-13', reference: 'LG-301', description: 'Customer collection', debit: '$6,200.00', balance: '$47,400.00' },
+      { date: '2024-07-13', reference: 'LG-302', description: 'Fuel expense', credit: '$1,280.00', balance: '$46,120.00' },
+      { date: '2024-07-13', reference: 'LG-303', description: 'Warehouse transfer', credit: '$6,200.00', balance: '$39,920.00' },
+      { date: '2024-07-13', reference: 'LG-304', description: 'Inventory adjustment', debit: '$8,800.00', balance: '$48,720.00' },
+    ],
+  },
+  {
     id: 4,
     slug: 'cash-book',
     name: 'Cash Book',
@@ -420,6 +584,7 @@ export const reportButtons = [
   { key: 'balance-sheet', label: 'Balance Sheet', icon: 'Scale', slug: 'balance-sheet' },
   { key: 'income-statement', label: 'Income Statement', icon: 'BadgeCheck', slug: 'income-statement' },
   { key: 'journal', label: 'Journal', icon: 'BookText', slug: 'journal' },
+  { key: 'ledger', label: 'Ledger', icon: 'BookOpen', slug: 'ledger' },
   { key: 'cash-book', label: 'Cash Book', icon: 'Wallet', slug: 'cash-book' },
 ] as const;
 
@@ -427,6 +592,7 @@ export const reportTypeIcons = {
   'Balance Sheet': 'Scale',
   'Income Statement': 'BadgeCheck',
   Journal: 'BookText',
+  Ledger: 'BookOpen',
   'Cash Book': 'Wallet',
   'Trial Balance': 'CalendarClock',
 } as const;
@@ -439,6 +605,8 @@ export const reportTypeToSlug = (type: ReportType) => {
       return 'income-statement';
     case 'Journal':
       return 'journal';
+    case 'Ledger':
+      return 'ledger';
     case 'Cash Book':
       return 'cash-book';
     case 'Trial Balance':
@@ -460,6 +628,10 @@ const reportBusinessMap: Record<number, string> = {
   8: 'Nexa Retail Group Ltd',
   9: 'Peak Foods Distributors',
   10: 'Peak Foods Distributors',
+  11: 'Acme Holdings Ltd',
+  12: 'Acme Holdings Ltd',
+  13: 'Nexa Retail Group Ltd',
+  14: 'Peak Foods Distributors',
 };
 
 export const getReportBusinessName = (id: number) => reportBusinessMap[id] ?? 'Acme Holdings Ltd';

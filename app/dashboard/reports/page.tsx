@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FileText, Download, BadgeCheck, CalendarClock, BookText, Scale, Wallet, Building2 } from 'lucide-react';
+import { FileText, Download, BadgeCheck, CalendarClock, BookText, Scale, Wallet, Building2, BookOpen } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import { reports as reportItems, reportButtons } from './reportData';
@@ -31,10 +31,14 @@ const reportBusinessMap: Record<number, string> = {
   8: 'nexa',
   9: 'peak',
   10: 'peak',
+  11: 'acme',
+  12: 'acme',
+  13: 'nexa',
+  14: 'peak',
 };
 
 export default function ReportsPage() {
-  const [activeView, setActiveView] = useState<'all' | 'balance-sheet' | 'income-statement' | 'journal' | 'cash-book'>('all');
+  const [activeView, setActiveView] = useState<'all' | 'balance-sheet' | 'income-statement' | 'journal' | 'ledger' | 'cash-book'>('all');
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>('all');
 
   const selectedBusiness =
@@ -66,6 +70,8 @@ export default function ReportsPage() {
         return report.type === 'Income Statement';
       case 'journal':
         return report.type === 'Journal';
+      case 'ledger':
+        return report.type === 'Ledger';
       case 'cash-book':
         return report.type === 'Cash Book';
       default:
@@ -80,6 +86,7 @@ export default function ReportsPage() {
     Scale,
     BadgeCheck,
     BookText,
+    BookOpen,
     Wallet,
   };
 
@@ -145,29 +152,7 @@ export default function ReportsPage() {
       </section>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
-          title="Total Reports"
-          value={scopedReports.length}
-          description={selectedBusinessId === 'all' ? 'Generated documents across your portfolio' : `Generated for ${selectedBusiness.name}`}
-          icon={FileText}
-        />
-        <StatCard
-          title="Ready Reports"
-          value={readyReports}
-          description="Available to download"
-          icon={BadgeCheck}
-        />
-        <StatCard
-          title="In Progress"
-          value={processingReports}
-          description="Still processing"
-          icon={CalendarClock}
-        />
-      </div>
-
-      {/* Report Views */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
         {reportButtons.map((button) => {
           const Icon = iconMap[button.icon];
           const active = activeView === button.key;
@@ -195,7 +180,27 @@ export default function ReportsPage() {
         })}
       </div>
 
-      {/* Reports Table */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard
+          title="Total Reports"
+          value={scopedReports.length}
+          description={selectedBusinessId === 'all' ? 'Generated documents across your portfolio' : `Generated for ${selectedBusiness.name}`}
+          icon={FileText}
+        />
+        <StatCard
+          title="Ready Reports"
+          value={readyReports}
+          description="Available to download"
+          icon={BadgeCheck}
+        />
+        <StatCard
+          title="In Progress"
+          value={processingReports}
+          description="Still processing"
+          icon={CalendarClock}
+        />
+      </div>
+
       <DataTable
         title="Available Reports"
         description={`${visibleReports.length} report(s) currently shown for ${selectedBusiness.name}`}
@@ -220,7 +225,7 @@ export default function ReportsPage() {
             key: 'type',
             label: 'Type',
             render: (value) => (
-              <span className="inline-block px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-700">
+              <span className="inline-block rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
                 {value}
               </span>
             ),
@@ -238,7 +243,7 @@ export default function ReportsPage() {
             label: 'Status',
             render: (value) => (
               <span
-                className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                className={`inline-block rounded px-2 py-1 text-xs font-medium ${
                   value === 'Ready'
                     ? 'bg-green-100 text-green-700'
                     : 'bg-yellow-100 text-yellow-700'
@@ -253,10 +258,10 @@ export default function ReportsPage() {
             label: 'Actions',
             render: (value) => (
               <div className="flex gap-2">
-                <Link href={`/dashboard/reports/${value}`} className="p-1 rounded transition-colors hover:bg-slate-100" title="View">
+                <Link href={`/dashboard/reports/${value}`} className="rounded p-1 transition-colors hover:bg-slate-100" title="View">
                   <FileText className="h-4 w-4 text-slate-600" />
                 </Link>
-                <button className="p-1 hover:bg-slate-100 rounded transition-colors" title="Download">
+                <button className="rounded p-1 transition-colors hover:bg-slate-100" title="Download">
                   <Download className="h-4 w-4 text-slate-600" />
                 </button>
               </div>
@@ -278,6 +283,7 @@ export default function ReportsPage() {
               { label: 'Balance Sheet', value: 'Balance Sheet' },
               { label: 'Income Statement', value: 'Income Statement' },
               { label: 'Journal', value: 'Journal' },
+              { label: 'Ledger', value: 'Ledger' },
               { label: 'Cash Book', value: 'Cash Book' },
               { label: 'Trial Balance', value: 'Trial Balance' },
             ],

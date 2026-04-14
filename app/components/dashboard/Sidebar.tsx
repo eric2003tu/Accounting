@@ -12,7 +12,6 @@ import {
   DollarSign,
   Landmark,
   Building2,
-  BookOpen,
   BarChart3,
   ChevronRight,
 } from 'lucide-react';
@@ -76,12 +75,6 @@ const menuItems = [
     name: 'Businesses',
     path: '/dashboard/businesses',
     icon: Building2,
-    badge: undefined,
-  },
-  {
-    name: 'Ledger',
-    path: '/dashboard/ledger',
-    icon: BookOpen,
     badge: undefined,
   },
   {

@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   BadgeCheck,
   BookText,
+  BookOpen,
   CalendarClock,
   Download,
   FileText,
@@ -136,6 +137,7 @@ const iconMap: Record<string, LucideIcon> = {
   'Balance Sheet': Scale,
   'Income Statement': BadgeCheck,
   Journal: BookText,
+  Ledger: BookOpen,
   'Cash Book': Wallet,
   'Trial Balance': CalendarClock,
 };
@@ -786,6 +788,73 @@ function JournalView({ data, businessName }: { data: JournalTemplate; businessNa
   );
 }
 
+function LedgerView({ report, businessName }: { report: ReportDefinition; businessName: string }) {
+  return (
+    <section className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+      <p className="mb-3 text-sm font-semibold text-slate-700">Business: {businessName}</p>
+      <div className="border-b border-slate-200 pb-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-700">General Ledger</p>
+        <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">{report.name}</h2>
+            <p className="mt-1 text-sm text-slate-500">{report.summary}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-right shadow-sm">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Period</p>
+            <p className="text-sm font-semibold text-slate-900">{report.period}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 overflow-x-auto rounded-3xl border border-slate-200 bg-white">
+        <table className="min-w-[760px] text-sm sm:min-w-full">
+          <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
+            <tr>
+              <th className="px-5 py-3 text-left font-semibold">Date</th>
+              <th className="px-5 py-3 text-left font-semibold">Reference</th>
+              <th className="px-5 py-3 text-left font-semibold">Description</th>
+              <th className="px-5 py-3 text-right font-semibold">Debit</th>
+              <th className="px-5 py-3 text-right font-semibold">Credit</th>
+              <th className="px-5 py-3 text-right font-semibold">Balance</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {report.rows.map((row) => (
+              <tr key={`${row.reference}-${row.date}`}>
+                <td className="px-5 py-4 text-slate-700">{row.date}</td>
+                <td className="px-5 py-4 font-medium text-slate-900">{row.reference}</td>
+                <td className="px-5 py-4 text-slate-700">{row.description}</td>
+                <td className="px-5 py-4 text-right font-mono text-slate-800 tabular-nums">{row.debit || '-'}</td>
+                <td className="px-5 py-4 text-right font-mono text-slate-800 tabular-nums">{row.credit || '-'}</td>
+                <td className="px-5 py-4 text-right font-mono font-semibold text-blue-600 tabular-nums">{row.balance || '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {report.sections.length > 0 && (
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {report.sections.map((section) => (
+            <div key={section.title} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <p className="text-sm font-semibold text-slate-900">{section.title}</p>
+              {section.description && <p className="mt-1 text-sm text-slate-500">{section.description}</p>}
+              <div className="mt-4 space-y-3">
+                {section.items.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm">
+                    <span className="font-medium text-slate-700">{item.label}</span>
+                    <span className="font-semibold text-slate-900">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function CashBookView({ data, businessName }: { data: CashBookTemplate; businessName: string }) {
   return (
     <section className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
@@ -954,6 +1023,14 @@ function getTemplate(report: ReportDefinition): ReportTemplate {
 }
 
 function buildCsv(report: ReportDefinition): CsvTable {
+  if (report.type === 'Ledger') {
+    return {
+      fileName: `${report.slug}-ledger.csv`,
+      headers: ['Date', 'Reference', 'Description', 'Debit', 'Credit', 'Balance'],
+      rows: report.rows.map((row) => [row.date, row.reference, row.description, row.debit || '', row.credit || '', row.balance || '']),
+    };
+  }
+
   const template = getTemplate(report);
 
   switch (template.kind) {
@@ -1018,6 +1095,10 @@ function buildCsv(report: ReportDefinition): CsvTable {
 }
 
 function TemplateRenderer({ report, businessName }: { report: ReportDefinition; businessName: string }) {
+  if (report.type === 'Ledger') {
+    return <LedgerView report={report} businessName={businessName} />;
+  }
+
   const template = getTemplate(report);
 
   switch (template.kind) {

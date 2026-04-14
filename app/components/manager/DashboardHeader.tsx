@@ -46,7 +46,6 @@ export default function DashboardHeader({
     '/manager/transactions': 'Transactions',
     '/manager/income': 'Income',
     '/manager/expenses': 'Expenses',
-    '/manager/ledger': 'Ledger',
     '/manager/reports': 'Reports',
     '/manager/notifications': 'Notifications',
     '/manager/profile': 'Profile',
