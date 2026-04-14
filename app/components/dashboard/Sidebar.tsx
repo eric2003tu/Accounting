@@ -44,6 +44,12 @@ const menuItems = [
     badge: undefined,
   },
   {
+    name: 'Sales',
+    path: '/dashboard/sales',
+    icon: DollarSign,
+    badge: undefined,
+  },
+  {
     name: 'Income',
     path: '/dashboard/income',
     icon: TrendingUp,
