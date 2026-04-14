@@ -28,9 +28,9 @@ export default function StatCard({
   return (
     <div
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)] transition-all duration-300 ${
+      className={`group relative overflow-hidden cursor-pointer rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)] transition-all duration-300 ${
         onClick
-          ? 'cursor-pointer hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(15,23,42,0.12)]'
+          ? 'hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(15,23,42,0.12)]'
           : 'hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(15,23,42,0.10)]'
       } ${className}`}
     >
