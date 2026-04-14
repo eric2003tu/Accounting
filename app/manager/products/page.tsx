@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Building2, Boxes, Package, AlertTriangle, TrendingUp, DollarSign } from 'lucide-react';
+import Link from 'next/link';
+import { Building2, Boxes, Package, AlertTriangle, TrendingUp, DollarSign, Plus } from 'lucide-react';
 import StatCard from '@/app/components/manager/StatCard';
 import DataTable from '@/app/components/manager/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
@@ -106,6 +107,16 @@ export default function ManagerProductsPage() {
           icon={TrendingUp}
         />
         <StatCard title="Projected Margin" value={percent(grossMargin)} description="Gross profit percentage" icon={DollarSign} />
+      </div>
+
+      <div className="flex justify-end">
+        <Link
+          href="/manager/products/add"
+          className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+        >
+          <Plus className="h-4 w-4" />
+          Add Product
+        </Link>
       </div>
 
       <DataTable<ProductRecord>

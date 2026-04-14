@@ -1,8 +1,9 @@
 'use client';
 
 import React, { Suspense } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Building2, Boxes, Package, AlertTriangle, TrendingUp, DollarSign } from 'lucide-react';
+import { Building2, Boxes, Package, AlertTriangle, TrendingUp, DollarSign, Plus } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
@@ -149,6 +150,16 @@ function ProductsPageContent() {
           icon={TrendingUp}
         />
         <StatCard title="Projected Margin" value={percent(grossMargin)} description="Gross profit percentage" icon={DollarSign} />
+      </div>
+
+      <div className="flex justify-end">
+        <Link
+          href={`/dashboard/products/add?businessId=${selectedBusiness.id}`}
+          className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+        >
+          <Plus className="h-4 w-4" />
+          Add Product
+        </Link>
       </div>
 
       <DataTable<ProductRecord>
