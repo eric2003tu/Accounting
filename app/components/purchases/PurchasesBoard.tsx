@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Building2,
@@ -11,6 +12,7 @@ import {
   Receipt,
   TrendingUp,
   Truck,
+  Plus,
 } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
@@ -179,6 +181,16 @@ export default function PurchasesBoard({ role, routeBase, businesses, defaultBus
         <StatCard title="Expected Gross Profit" value={money(expectedGrossProfit)} description="Projected profit from purchased items" icon={DollarSign} />
         <StatCard title="Expected Margin" value={percent(expectedMargin)} description="Projected gross margin" icon={DollarSign} />
         <StatCard title="Unpaid / Pending" value={`${unpaidCount} / ${receivingPendingCount}`} description="Unpaid and not fully received" icon={Landmark} />
+      </div>
+
+      <div className="flex justify-end">
+        <Link
+          href={`${routeBase}/add${selectedBusinessId ? `?businessId=${selectedBusinessId}` : ''}`}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
+        >
+          <Plus className="h-4 w-4" />
+          Add Purchase
+        </Link>
       </div>
 
       <DataTable<PurchaseRecord>
