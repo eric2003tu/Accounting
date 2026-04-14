@@ -10,6 +10,7 @@ import {
   DollarSign,
   FileText,
   Landmark,
+  Plus,
   Receipt,
   TrendingUp,
 } from 'lucide-react';
@@ -174,6 +175,16 @@ export default function SalesBoard({ role, routeBase, businesses, defaultBusines
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <StatCard title="Fully Paid" value={fullyPaidCount} description="Closed payment records" icon={CreditCard} />
         <StatCard title="Partially Paid" value={partiallyPaidCount} description="Balance still due" icon={Landmark} />
+      </div>
+
+      <div className="flex justify-end">
+        <Link
+          href={`${routeBase}/add${selectedBusinessId ? `?businessId=${selectedBusinessId}` : ''}`}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
+        >
+          <Plus className="h-4 w-4" />
+          Add Sale
+        </Link>
       </div>
 
       <DataTable<SaleRecord>
