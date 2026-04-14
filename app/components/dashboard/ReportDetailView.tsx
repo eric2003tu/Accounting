@@ -1047,7 +1047,7 @@ export default function ReportDetailView({ report, businessName }: ReportDetailV
   };
 
   return (
-    <div className="space-y-6 overflow-x-hidden" data-report-printable>
+    <div className="space-y-6 overflow-x-clip" data-report-printable>
       <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)] sm:p-6 lg:flex-row lg:items-end lg:justify-between no-print">
         <div className="space-y-3">
           <Link
