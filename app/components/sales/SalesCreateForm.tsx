@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { productsByBusiness } from '@/app/lib/productsData';
 import {
   ArrowLeft,
   BadgeInfo,
@@ -19,6 +20,7 @@ import {
   Store,
   Tag,
   TrendingUp,
+  Search,
 } from 'lucide-react';
 
 type BusinessOption = {
@@ -62,6 +64,8 @@ export default function SalesCreateForm({
   const [saleType, setSaleType] = useState<(typeof saleTypes)[number]>('Product Sale');
   const [productName, setProductName] = useState('');
   const [sku, setSku] = useState('');
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [productSearch, setProductSearch] = useState('');
   const [customer, setCustomer] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [unitCost, setUnitCost] = useState('0');
@@ -85,19 +89,70 @@ export default function SalesCreateForm({
   const [collateral, setCollateral] = useState('');
 
   const selectedBusiness = businesses.find((item) => item.id === businessId) ?? null;
+  const businessProducts = useMemo(() => productsByBusiness[Number(businessId)] ?? [], [businessId]);
+  const selectedProduct = useMemo(
+    () => businessProducts.find((item) => String(item.id) === selectedProductId) ?? null,
+    [businessProducts, selectedProductId],
+  );
+  const filteredProducts = useMemo(() => {
+    const query = productSearch.trim().toLowerCase();
+    if (!query) {
+      return businessProducts;
+    }
+
+    return businessProducts.filter((item) => {
+      const haystack = `${item.productName} ${item.sku} ${item.barcode} ${item.brand} ${item.category}`.toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [businessProducts, productSearch]);
+
+  useEffect(() => {
+    if (!selectedProductId) {
+      return;
+    }
+
+    const existsInBusiness = businessProducts.some((item) => String(item.id) === selectedProductId);
+    if (!existsInBusiness) {
+      setSelectedProductId('');
+      setProductSearch('');
+      setProductName('');
+      setSku('');
+      setUnitCost('0');
+      setUnitPrice('0');
+    }
+  }, [businessProducts, selectedProductId]);
+
+  useEffect(() => {
+    if (!selectedProduct) {
+      return;
+    }
+
+    setProductName(selectedProduct.productName);
+    setSku(selectedProduct.sku);
+    setUnitCost(String(selectedProduct.unitCost));
+    setUnitPrice(String(selectedProduct.unitPrice));
+    setTaxRate(String(selectedProduct.taxRate));
+    setDiscountRate(String(selectedProduct.discountRate));
+  }, [selectedProduct]);
+
+  const computedSubtotal = useMemo(() => {
+    const qty = Number(quantity || '0');
+    const price = Number(unitPrice || '0');
+    return qty * price;
+  }, [quantity, unitPrice]);
 
   const preview = useMemo(() => {
     const qty = Number(quantity || '0');
     const cost = Number(unitCost || '0');
     const price = Number(unitPrice || '0');
-    const enteredSubtotal = Number(subtotal || '0');
+    const computedSubtotalValue = Number(subtotal || '0');
     const discount = Number(discountRate || '0');
     const tax = Number(taxRate || '0');
     const shipping = Number(shippingFee || '0');
     const principal = Number(loanPrincipal || '0');
     const interestRate = Number(loanInterestRate || '0');
     const interestAmount = Number(loanInterestAmount || '0');
-    const productSubtotal = saleType === 'Loan Sale' ? principal : (enteredSubtotal > 0 ? enteredSubtotal : qty * price);
+    const productSubtotal = saleType === 'Loan Sale' ? principal : computedSubtotalValue;
     const discountAmount = productSubtotal * (discount / 100);
     const taxableAmount = productSubtotal - discountAmount;
     const taxAmount = saleType === 'Loan Sale' ? 0 : taxableAmount * (tax / 100);
@@ -136,6 +191,14 @@ export default function SalesCreateForm({
     unitCost,
     unitPrice,
   ]);
+
+  useEffect(() => {
+    if (saleType === 'Loan Sale') {
+      return;
+    }
+
+    setSubtotal(computedSubtotal.toFixed(2));
+  }, [computedSubtotal, saleType]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -266,13 +329,62 @@ export default function SalesCreateForm({
               </div>
             </label>
 
+            {saleType === 'Product Sale' && (
+              <div className="space-y-2 sm:col-span-2 lg:col-span-3">
+                <label className="text-sm font-medium text-slate-700">
+                  Search and Select Product <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                  <input
+                    className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+                    value={productSearch}
+                    onChange={(event) => setProductSearch(event.target.value)}
+                    placeholder="Search by product name, SKU, barcode, or brand"
+                  />
+                </div>
+
+                <div className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white">
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map((item) => {
+                      const isSelected = selectedProductId === String(item.id);
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedProductId(String(item.id));
+                            setProductSearch(item.productName);
+                          }}
+                          className={`flex w-full items-start justify-between gap-3 border-b border-slate-100 px-3 py-2 text-left last:border-b-0 ${
+                            isSelected ? 'bg-green-50 text-green-900' : 'text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>
+                            <span className="block text-sm font-semibold">{item.productName}</span>
+                            <span className="block text-xs text-slate-500">{item.sku} • {item.brand}</span>
+                          </span>
+                          <span className="shrink-0 text-xs font-medium text-slate-500">{money(item.unitPrice)}</span>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <p className="px-3 py-3 text-sm text-slate-500">No product matches your search in this business.</p>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500">
+                  Select from registered product data. Quantity remains manual so you can control each sale line precisely.
+                </p>
+              </div>
+            )}
+
             <label className="text-sm font-medium text-slate-700">
               Product / Loan Item <span className="text-red-500">*</span>
-              <input className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" value={productName} onChange={(event) => setProductName(event.target.value)} placeholder="e.g., ApexBook Pro 14" required />
+              <input className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" value={productName} onChange={(event) => setProductName(event.target.value)} placeholder="e.g., ApexBook Pro 14" required readOnly={saleType === 'Product Sale'} />
             </label>
             <label className="text-sm font-medium text-slate-700">
               SKU / Loan Code
-              <input className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" value={sku} onChange={(event) => setSku(event.target.value.toUpperCase())} placeholder="e.g., ACM-LTP-14PRO" />
+              <input className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" value={sku} onChange={(event) => setSku(event.target.value.toUpperCase())} placeholder="e.g., ACM-LTP-14PRO" readOnly={saleType === 'Product Sale'} />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Customer <span className="text-red-500">*</span>
@@ -294,7 +406,7 @@ export default function SalesCreateForm({
 
             <label className="text-sm font-medium text-slate-700">
               Subtotal
-              <input type="number" min="0" step="0.01" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" value={subtotal} onChange={(event) => setSubtotal(event.target.value)} />
+              <input type="number" min="0" step="0.01" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" value={subtotal} onChange={(event) => setSubtotal(event.target.value)} readOnly={saleType === 'Product Sale'} />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Discount Rate (%)
@@ -313,6 +425,17 @@ export default function SalesCreateForm({
             <label className="text-sm font-medium text-slate-700">
               Shipping Fee
               <input type="number" min="0" step="0.01" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" value={shippingFee} onChange={(event) => setShippingFee(event.target.value)} />
+            </label>
+            <label className="text-sm font-medium text-slate-700">
+              Total Price (Auto)
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+                value={preview.totalAmount.toFixed(2)}
+                readOnly
+              />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Paid Amount
@@ -360,6 +483,23 @@ export default function SalesCreateForm({
               <input className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" value={salesperson} onChange={(event) => setSalesperson(event.target.value)} placeholder="e.g., Aline Niyonsaba" />
             </label>
           </div>
+
+          {saleType === 'Product Sale' && selectedProduct && (
+            <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4">
+              <h3 className="text-sm font-semibold text-green-900">Selected product details</h3>
+              <div className="mt-3 grid gap-2 text-sm text-green-900 sm:grid-cols-2 lg:grid-cols-3">
+                <p>Product: <span className="font-semibold">{selectedProduct.productName}</span></p>
+                <p>SKU: <span className="font-semibold">{selectedProduct.sku}</span></p>
+                <p>Category: <span className="font-semibold">{selectedProduct.category}</span></p>
+                <p>Brand: <span className="font-semibold">{selectedProduct.brand}</span></p>
+                <p>Supplier: <span className="font-semibold">{selectedProduct.supplier}</span></p>
+                <p>Barcode: <span className="font-semibold">{selectedProduct.barcode}</span></p>
+                <p>Stock: <span className="font-semibold">{selectedProduct.stockQuantity}</span></p>
+                <p>Status: <span className="font-semibold">{selectedProduct.status}</span></p>
+                <p>Warehouse: <span className="font-semibold">{selectedProduct.warehouse}</span></p>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
