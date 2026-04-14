@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Send,
+  Package,
   TrendingUp,
   DollarSign,
   Landmark,
@@ -34,6 +35,12 @@ const menuItems = [
     name: 'Transactions',
     path: '/dashboard/transactions',
     icon: Send,
+    badge: undefined,
+  },
+  {
+    name: 'Products',
+    path: '/dashboard/products',
+    icon: Package,
     badge: undefined,
   },
   {
