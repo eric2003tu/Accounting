@@ -7,14 +7,13 @@ import {
   LayoutDashboard,
   Send,
   Package,
+  ShoppingCart,
   TrendingUp,
   DollarSign,
   Landmark,
   Building2,
   BookOpen,
   BarChart3,
-  Settings,
-  LogOut,
   ChevronRight,
 } from 'lucide-react';
 
@@ -47,6 +46,12 @@ const menuItems = [
     name: 'Sales',
     path: '/dashboard/sales',
     icon: DollarSign,
+    badge: undefined,
+  },
+  {
+    name: 'Purchases',
+    path: '/dashboard/purchases',
+    icon: ShoppingCart,
     badge: undefined,
   },
   {
@@ -130,7 +135,7 @@ export default function Sidebar({ isOpen, mobileOpen, onClose }: SidebarProps) {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 min-h-0">
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4 lg:overflow-y-visible">
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -161,34 +166,6 @@ export default function Sidebar({ isOpen, mobileOpen, onClose }: SidebarProps) {
           })}
         </ul>
       </nav>
-
-      {/* Sidebar Footer */}
-      <div className="border-t border-slate-800 p-3 flex-none">
-        <ul className="space-y-2">
-          <li>
-            <Link
-              href="/dashboard/settings"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all duration-200"
-              title={!isOpen ? 'Settings' : ''}
-            >
-              <Settings className="h-5 w-5 flex-shrink-0" />
-              {isOpen && <span>Settings</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/login"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-red-900/20 hover:text-red-400 transition-all duration-200"
-              title={!isOpen ? 'Logout' : ''}
-            >
-              <LogOut className="h-5 w-5 flex-shrink-0" />
-              {isOpen && <span>Logout</span>}
-            </Link>
-          </li>
-        </ul>
-      </div>
       </aside>
     </>
   );
