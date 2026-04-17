@@ -18,7 +18,7 @@ const featureCards = [
     title: 'Executive-grade financial insight',
     description:
       'Translate ledger activity into decision-ready dashboards that show cash position, margin movement, and growth pressure in one view.',
-    image: '/images/growth-dashboard.png',
+    image: '/images/bg6.jpg',
     Icon: BarChart3,
   },
   {
@@ -48,7 +48,7 @@ const operatingRhythm = [
     phase: 'Daily',
     title: 'Realtime cash movement tracking',
     detail: 'Classify inflows and outflows as they happen, with exception flags that call out unusual spikes before they become problems.',
-    image: '/images/bg1.jpg',
+    image: '/images/bg5.jpg',
     Icon: Clock3,
   },
   {
@@ -82,7 +82,7 @@ const visualStories = [
   {
     title: 'Controls that stay audit-ready',
     detail: 'Protect sensitive records with layered permissions and traceable approvals that reduce back-and-forth.',
-    image: '/images/security-vault.png',
+    image: '/images/bg7.jpg',
   },
   {
     title: 'Team execution without guesswork',

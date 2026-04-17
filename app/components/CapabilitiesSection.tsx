@@ -7,14 +7,14 @@ const capabilities = [
       title: 'Close Management',
       description: 'Keep month-end organized with a clear checklist, owner assignment, and status at each step.',
       points: ['Track pending tasks by entity', 'Assign ownership and due dates', 'Export close evidence quickly'],
-      image: '/images/growth-dashboard.png',
+      image: '/images/bg4.jpg',
       Icon: FileSpreadsheet,
    },
    {
       title: 'Security and Access',
       description: 'Set practical controls by team and role so people only see what they need to do their work.',
       points: ['Role-based views across teams', 'Approval routing with clear thresholds', 'Searchable activity history'],
-      image: '/images/security-vault.png',
+      image: '/images/bg9.jpg',
       Icon: Lock,
    },
    {
