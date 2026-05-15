@@ -243,11 +243,188 @@ function getSummaryStats(report: any, parsedData: any) {
     ];
   }
 
+  if (type === 'Ledger') {
+    const rows = parsedData?.rows || [];
+    const sections = parsedData?.sections || [];
+    return [
+      { label: 'Entries', value: String(rows.length), description: 'Ledger lines included in the report' },
+      { label: 'Sections', value: String(sections.length), description: 'Summary sections in the payload' },
+      { label: 'Status', value: String(parsedData?.status ?? 'Balanced'), description: 'Ledger status supplied by the API' },
+    ];
+  }
+
   return [];
 }
 
 function getGenericIcon(type?: string) {
   return iconMap[normalizeReportType(type)] || FileText;
+}
+
+function toMonetaryLine(item: any): MonetaryLine {
+  return {
+    label: item?.label ?? item?.name ?? item?.account ?? item?.particulars ?? item?.title ?? 'Item',
+    amount: String(item?.amount ?? item?.value ?? item?.balance ?? item?.debit ?? item?.credit ?? ''),
+    note: item?.note ?? item?.description,
+  };
+}
+
+function buildApiBalanceSheetTemplate(parsedData: any): BalanceSheetTemplate | null {
+  const sheet = parsedData?.balance_sheet || parsedData;
+  if (!sheet || (!sheet.currentAssets && !sheet.assets && !sheet.currentLiabilities && !sheet.liabilities && !sheet.capital && !sheet.equity)) {
+    return null;
+  }
+
+  return {
+    currentAssets: (sheet.currentAssets || sheet.assets || []).map(toMonetaryLine),
+    fixedAssets: (sheet.fixedAssets || []).map(toMonetaryLine),
+    currentLiabilities: (sheet.currentLiabilities || sheet.liabilities || []).map(toMonetaryLine),
+    longTermLiabilities: (sheet.longTermLiabilities || []).map(toMonetaryLine),
+    capital: (sheet.capital || sheet.equity || []).map(toMonetaryLine),
+    totals: {
+      currentAssets: String(sheet.totals?.currentAssets ?? sheet.total_assets ?? sheet.totalAssets ?? ''),
+      fixedAssets: String(sheet.totals?.fixedAssets ?? ''),
+      totalAssets: String(sheet.totals?.totalAssets ?? sheet.total_assets ?? sheet.totalAssets ?? ''),
+      currentLiabilities: String(sheet.totals?.currentLiabilities ?? ''),
+      longTermLiabilities: String(sheet.totals?.longTermLiabilities ?? ''),
+      totalLiabilities: String(sheet.totals?.totalLiabilities ?? sheet.total_liabilities ?? sheet.totalLiabilities ?? ''),
+      capital: String(sheet.totals?.capital ?? ''),
+      retainedEarnings: String(sheet.totals?.retainedEarnings ?? ''),
+      totalEquity: String(sheet.totals?.totalEquity ?? sheet.total_equity ?? sheet.totalEquity ?? ''),
+      liabilitiesAndEquity: String(sheet.totals?.liabilitiesAndEquity ?? ''),
+      balanceCheck: String(sheet.totals?.balanceCheck ?? sheet.balanceCheck ?? sheet.balance_check ?? ''),
+    },
+  };
+}
+
+function buildApiIncomeStatementTemplate(parsedData: any): IncomeStatementTemplate | null {
+  const statement = parsedData?.income_statement || parsedData;
+  if (!statement || (!statement.revenue && !statement.income && !statement.costOfSales && !statement.operatingExpenses && !statement.expenses)) {
+    return null;
+  }
+
+  return {
+    revenue: (statement.revenue || statement.income || []).map(toMonetaryLine),
+    costOfSales: (statement.costOfSales || statement.cost_of_sales || []).map(toMonetaryLine),
+    operatingExpenses: (statement.operatingExpenses || statement.expenses || []).map(toMonetaryLine),
+    totals: {
+      revenue: String(statement.totals?.revenue ?? statement.total_income ?? statement.totalIncome ?? ''),
+      costOfSales: String(statement.totals?.costOfSales ?? ''),
+      grossProfit: String(statement.totals?.grossProfit ?? statement.gross_profit ?? statement.grossProfit ?? ''),
+      operatingExpenses: String(statement.totals?.operatingExpenses ?? statement.total_expenses ?? statement.totalExpenses ?? ''),
+      netProfit: String(statement.totals?.netProfit ?? statement.net_income ?? statement.netIncome ?? ''),
+    },
+  };
+}
+
+function buildApiJournalTemplate(parsedData: any): JournalTemplate | null {
+  const journal = parsedData?.journal || parsedData;
+  if (!journal?.entries) return null;
+
+  return {
+    entries: journal.entries.map((entry: any) => ({
+      date: entry.date,
+      reference: entry.reference,
+      narration: entry.narration ?? entry.description ?? '',
+      lines: Array.isArray(entry.lines)
+        ? entry.lines.map((line: any) => ({ account: line.account ?? line.label ?? 'Account', debit: line.debit, credit: line.credit }))
+        : [],
+    })),
+    totals: {
+      debit: String(journal.totals?.debit ?? ''),
+      credit: String(journal.totals?.credit ?? ''),
+      balance: String(journal.totals?.balance ?? journal.totals?.difference ?? ''),
+    },
+  };
+}
+
+function buildApiCashBookTemplate(parsedData: any): CashBookTemplate | null {
+  const cashBook = parsedData?.cashbook || parsedData?.cash_book || parsedData;
+  if (!cashBook || (!cashBook.receipts && !cashBook.payments && !cashBook.openingBalance && !cashBook.opening_balance)) {
+    return null;
+  }
+
+  return {
+    openingBalance: String(cashBook.openingBalance ?? cashBook.opening_balance ?? ''),
+    receipts: (cashBook.receipts || []).map((item: any) => ({
+      date: item.date,
+      reference: item.reference,
+      particulars: item.particulars ?? item.description ?? '',
+      amount: String(item.amount ?? ''),
+      balance: String(item.balance ?? ''),
+    })),
+    payments: (cashBook.payments || []).map((item: any) => ({
+      date: item.date,
+      reference: item.reference,
+      particulars: item.particulars ?? item.description ?? '',
+      amount: String(item.amount ?? ''),
+      balance: String(item.balance ?? ''),
+    })),
+    totals: {
+      receipts: String(cashBook.totals?.receipts ?? ''),
+      payments: String(cashBook.totals?.payments ?? ''),
+      closing: String(cashBook.totals?.closing ?? ''),
+    },
+  };
+}
+
+function buildApiTrialBalanceTemplate(parsedData: any): TrialBalanceTemplate | null {
+  const trialBalance = parsedData?.trial_balance || parsedData;
+  if (!trialBalance?.accounts) return null;
+
+  return {
+    accounts: trialBalance.accounts.map((item: any) => ({
+      account: item.account ?? item.label ?? 'Account',
+      debit: item.debit,
+      credit: item.credit,
+      note: item.note,
+    })),
+    totals: {
+      debit: String(trialBalance.totals?.debit ?? ''),
+      credit: String(trialBalance.totals?.credit ?? ''),
+      difference: String(trialBalance.totals?.difference ?? ''),
+    },
+  };
+}
+
+function buildApiReportTemplate(report: any, parsedData: any): ReportTemplate | null {
+  switch (normalizeReportType(report?.type)) {
+    case 'Balance Sheet':
+      return buildApiBalanceSheetTemplate(parsedData)
+        ? { kind: 'Balance Sheet', data: buildApiBalanceSheetTemplate(parsedData)! }
+        : null;
+    case 'Income Statement':
+      return buildApiIncomeStatementTemplate(parsedData)
+        ? { kind: 'Income Statement', data: buildApiIncomeStatementTemplate(parsedData)! }
+        : null;
+    case 'Journal':
+      return buildApiJournalTemplate(parsedData)
+        ? { kind: 'Journal', data: buildApiJournalTemplate(parsedData)! }
+        : null;
+    case 'Cash Book':
+      return buildApiCashBookTemplate(parsedData)
+        ? { kind: 'Cash Book', data: buildApiCashBookTemplate(parsedData)! }
+        : null;
+    case 'Trial Balance':
+      return buildApiTrialBalanceTemplate(parsedData)
+        ? { kind: 'Trial Balance', data: buildApiTrialBalanceTemplate(parsedData)! }
+        : null;
+    default:
+      return null;
+  }
+}
+
+function getApiRenderableLedger(report: any, parsedData: any) {
+  const payload = parsedData?.ledger || parsedData || {};
+  if (!Array.isArray(payload.rows)) return null;
+
+  return {
+    ...report,
+    name: report?.name || 'General Ledger',
+    summary: getDisplaySummary(report, parsedData) || 'Detailed ledger activity returned by the API.',
+    period: formatDisplayPeriod(report, parsedData),
+    rows: payload.rows,
+    sections: payload.sections || [],
+  };
 }
 
 function ApiFallbackView({ report, businessName, parsedData }: { report: any; businessName: string; parsedData: any }) {
@@ -1176,16 +1353,16 @@ function getTemplate(report: ReportDefinition): ReportTemplate {
 function buildCsv(report: ReportDefinition): CsvTable {
   const parsedData = parseReportData(report);
   const normalizedType = normalizeReportType(report.type);
+  const template = getTemplate(report) || buildApiReportTemplate(report, parsedData);
 
   if (normalizedType === 'Ledger') {
+    const ledgerRows = parsedData?.rows || report.rows || [];
     return {
       fileName: `${report.slug || String(report.id)}-ledger.csv`,
       headers: ['Date', 'Reference', 'Description', 'Debit', 'Credit', 'Balance'],
-      rows: report.rows.map((row) => [row.date, row.reference, row.description, row.debit || '', row.credit || '', row.balance || '']),
+      rows: ledgerRows.map((row: any) => [row.date, row.reference, row.description, row.debit || '', row.credit || '', row.balance || '']),
     };
   }
-
-  const template = getTemplate(report);
 
   if (!template) {
     const payload = parsedData || {};
@@ -1260,12 +1437,13 @@ function buildCsv(report: ReportDefinition): CsvTable {
 function TemplateRenderer({ report, businessName }: { report: ReportDefinition; businessName: string }) {
   const parsedData = parseReportData(report);
   const normalizedType = normalizeReportType(report.type);
+  const apiLedgerReport = getApiRenderableLedger(report, parsedData);
 
-  if (normalizedType === 'Ledger' && report.rows) {
-    return <LedgerView report={report} businessName={businessName} />;
+  if (normalizedType === 'Ledger' && apiLedgerReport) {
+    return <LedgerView report={apiLedgerReport as any} businessName={businessName} />;
   }
 
-  const template = getTemplate(report);
+  const template = getTemplate(report) || buildApiReportTemplate(report, parsedData);
 
   if (!template) {
     return <ApiFallbackView report={report} businessName={businessName} parsedData={parsedData} />;
