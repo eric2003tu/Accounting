@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { purchasesClient } from '@/app/lib/apiClients';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -109,7 +110,7 @@ export default function PurchasesCreateForm({
     };
   }, [discountRate, expectedRevenue, paidAmount, quantity, shippingFee, taxRate, unitCost]);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const payload = {
@@ -145,9 +146,13 @@ export default function PurchasesCreateForm({
       expectedMargin: preview.expectedMargin,
       purchaseStatus: preview.balanceDue > 0 ? 'Open' : 'Closed',
     };
-
-    console.log(payload);
-    router.push(`${submitHrefBase}?businessId=${businessId}`);
+    try {
+      await purchasesClient.create(payload);
+      router.push(`${submitHrefBase}?businessId=${businessId}`);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to create purchase', err);
+    }
   };
 
   return (

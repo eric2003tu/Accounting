@@ -1,5 +1,8 @@
+"use client";
+
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   BriefcaseBusiness,
@@ -11,10 +14,21 @@ import {
   UserRound,
 } from 'lucide-react';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
-import {
-  getAdminUserById,
-  getBusinessesByOwnerId,
-} from '@/app/admin/data/adminDirectoryData';
+import usersClient from '@/app/lib/clients/usersClient';
+import businessClient from '@/app/lib/clients/businessClient';
+
+type UiUser = {
+  id: number | string;
+  name: string;
+  email: string;
+  phone?: string;
+  role?: string;
+  status?: string;
+  mfa?: string;
+  lastLogin?: string;
+  joinedAt?: string;
+  department?: string;
+};
 
 function money(value: number) {
   const sign = value < 0 ? '-' : '';
@@ -29,54 +43,82 @@ function ratio(numerator: number, denominator: number) {
   return `${((numerator / denominator) * 100).toFixed(1)}%`;
 }
 
-function UserInfoRow({ label, value }: { label: string; value: string }) {
+function UserInfoRow({ label, value }: { label: string; value?: string }) {
   return (
     <div className="flex flex-col gap-1 border-b border-slate-100 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 last:border-b-0 last:pb-0">
       <span className="text-sm text-slate-500">{label}</span>
-      <span className="text-sm font-semibold text-slate-900 sm:text-right">{value}</span>
+      <span className="text-sm font-semibold text-slate-900 sm:text-right">{value ?? ''}</span>
     </div>
   );
 }
 
-export default async function AdminUserDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export default function AdminUserDetailPage() {
+  const params = useParams();
+  const id = params?.id ?? '';
   const userId = Number(id);
-  const user = getAdminUserById(userId);
 
-  if (!user) {
-    notFound();
-  }
+  const [user, setUser] = useState<UiUser | null>(null);
+  const [ownedBusinesses, setOwnedBusinesses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const ownedBusinesses = getBusinessesByOwnerId(user.id);
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const [u, allBusinesses] = await Promise.all([usersClient.getById(String(userId)), businessClient.getAll()]);
+        if (!mounted) return;
+        const mappedUser = {
+          id: u.id,
+          name: `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email,
+          email: u.email,
+          phone: u.phone || '',
+          role: (u.roles && u.roles[0]) || 'Owner',
+          status: u.is_active ? 'Active' : 'Suspended',
+          mfa: 'Disabled',
+          lastLogin: u.updated_at || '',
+          joinedAt: u.created_at || '',
+          department: '',
+        };
+        setUser(mappedUser);
 
-  const totalRevenue = ownedBusinesses.reduce(
-    (sum, business) => sum + business.financials.monthlyRevenue,
-    0
-  );
-  const totalNetProfit = ownedBusinesses.reduce(
-    (sum, business) => sum + business.financials.netProfit,
-    0
-  );
+        const owned = (allBusinesses || []).filter((b: any) => String(b.owner_id) === String(u.id));
+        setOwnedBusinesses(owned);
+      } catch (err: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load user detail', err);
+        if (mounted) setError(err?.message || 'Failed to load user');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    if (userId) load();
+    return () => {
+      mounted = false;
+    };
+  }, [userId]);
+
+  if (!id) return <div className="text-slate-600">Invalid user id.</div>;
+  if (loading) return <div className="text-slate-600">Loading...</div>;
+  if (error || !user) return <div className="text-slate-600">{error || 'User not found.'}</div>;
+
+  const totalRevenue = ownedBusinesses.reduce((sum, business) => sum + (business.financials?.monthlyRevenue || 0), 0);
+  const totalNetProfit = ownedBusinesses.reduce((sum, business) => sum + (business.financials?.netProfit || 0), 0);
   const atRiskBusinesses = ownedBusinesses.filter(
-    (business) =>
-      business.status !== 'Active' ||
-      business.financials.netProfit < 0 ||
-      business.financials.overdueInvoices >= 5
+    (business) => business.status !== 'Active' || (business.financials?.netProfit ?? 0) < 0 || (business.financials?.overdueInvoices ?? 0) >= 5
   ).length;
   const blendedMargin = ratio(totalNetProfit, totalRevenue);
 
   const revenueByBusiness = ownedBusinesses.map((business) => ({
-    label: business.businessName,
-    value: business.financials.monthlyRevenue,
+    label: business.businessName || business.name || `Business ${business.id}`,
+    value: business.financials?.monthlyRevenue || 0,
   }));
 
   const equityByBusiness = ownedBusinesses.map((business) => ({
-    label: business.businessName,
-    value: Math.max(0, business.financials.equity),
+    label: business.businessName || business.name || `Business ${business.id}`,
+    value: Math.max(0, business.financials?.equity || 0),
   }));
 
   return (
@@ -169,10 +211,10 @@ export default async function AdminUserDetailPage({
                           href={`/admin/businesses/${business.id}`}
                           className="text-base font-semibold text-slate-900 transition-colors hover:text-green-700"
                         >
-                          {business.businessName}
+                          {business.businessName || business.name || `Business ${business.id}`}
                         </Link>
                         <p className="mt-1 text-sm text-slate-600">
-                          {business.country} · {business.industry} · {business.subscription}
+                          {business.country || ''} · {business.industry || ''} · {business.subscription || business.plan || ''}
                         </p>
                       </div>
                       <span
@@ -191,24 +233,24 @@ export default async function AdminUserDetailPage({
                     <div className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
                       <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
                         <p className="text-slate-500">Revenue</p>
-                        <p className="font-semibold text-slate-900">{money(business.financials.monthlyRevenue)}</p>
+                        <p className="font-semibold text-slate-900">{money(business.financials?.monthlyRevenue || 0)}</p>
                       </div>
                       <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
                         <p className="text-slate-500">Net Profit</p>
-                        <p className={`font-semibold ${business.financials.netProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
-                          {money(business.financials.netProfit)}
+                        <p className={`font-semibold ${(business.financials?.netProfit || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                          {money(business.financials?.netProfit || 0)}
                         </p>
                       </div>
                       <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
                         <p className="text-slate-500">Equity</p>
-                        <p className={`font-semibold ${business.financials.equity >= 0 ? 'text-slate-900' : 'text-red-700'}`}>
-                          {money(business.financials.equity)}
+                        <p className={`font-semibold ${(business.financials?.equity || 0) >= 0 ? 'text-slate-900' : 'text-red-700'}`}>
+                          {money(business.financials?.equity || 0)}
                         </p>
                       </div>
                       <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
                         <p className="text-slate-500">Overdue</p>
-                        <p className={`font-semibold ${business.financials.overdueInvoices >= 5 ? 'text-red-700' : 'text-slate-900'}`}>
-                          {business.financials.overdueInvoices}
+                        <p className={`font-semibold ${(business.financials?.overdueInvoices || 0) >= 5 ? 'text-red-700' : 'text-slate-900'}`}>
+                          {business.financials?.overdueInvoices || 0}
                         </p>
                       </div>
                     </div>

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { businessClient } from '@/app/lib/apiClients';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -18,7 +20,7 @@ import {
   TrendingUp,
   Wallet,
 } from 'lucide-react';
-import { getAdminUserById } from '@/app/admin/data/adminDirectoryData';
+import { usersClient } from '@/app/lib/apiClients';
 
 const currentOwnerId = 5;
 
@@ -81,7 +83,21 @@ function money(value: number) {
 }
 
 export default function AddBusinessPage() {
-  const owner = getAdminUserById(currentOwnerId);
+  const [owner, setOwner] = useState<any | null>(null);
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const u = await usersClient.getById(String(currentOwnerId));
+        if (!mounted) return;
+        setOwner(u || null);
+      } catch (err) {
+        console.error('Failed to load owner user', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+  const router = useRouter();
 
   const [businessName, setBusinessName] = useState('');
   const [legalName, setLegalName] = useState('');
@@ -168,7 +184,29 @@ export default function AddBusinessPage() {
       },
     };
 
-    console.log(payload);
+    (async () => {
+      try {
+        await businessClient.create({
+          name: businessName,
+          legal_name: legalName,
+          trade_name: tradeName,
+          vat_number: taxId,
+          registration_no: registrationNo,
+          industry,
+          country,
+          city,
+          timezone,
+          subscription,
+          billing_cycle: billingCycle,
+          next_billing_date: nextBillingDate,
+          status,
+        });
+        router.push('/dashboard/businesses');
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to create business', err);
+      }
+    })();
   };
 
   return (

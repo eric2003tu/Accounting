@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -13,42 +13,10 @@ import {
 import StatCard from '@/app/components/manager/StatCard';
 import DataTable from '@/app/components/manager/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
-import {
-  adminBusinesses,
-  getAdminUserById,
-} from '@/app/admin/data/adminDirectoryData';
+import businessClient from '@/app/lib/clients/businessClient';
+import usersClient from '@/app/lib/clients/usersClient';
 
-const currentOwnerId = 5;
-
-const initialBusinesses = adminBusinesses
-  .filter((business) => business.ownerId === currentOwnerId)
-  .map((business) => ({
-    id: business.id,
-    businessName: business.businessName,
-    legalName: business.legalName,
-    tradeName: business.tradeName,
-    taxId: business.taxId,
-    registrationNo: business.registrationNo,
-    industry: business.industry,
-    ownerName: getAdminUserById(business.ownerId)?.name || 'Unknown Owner',
-    country: business.country,
-    city: business.city,
-    timezone: business.timezone,
-    plan: business.subscription,
-    billingCycle: business.billingCycle,
-    nextBillingDate: business.nextBillingDate,
-    status: business.status,
-    monthlyRevenue: business.financials.monthlyRevenue,
-    monthlyExpenses: business.financials.monthlyExpenses,
-    netProfit: business.financials.netProfit,
-    cashBalance: business.financials.cashBalance,
-    receivables: business.financials.receivables,
-    payables: business.financials.payables,
-    assets: business.financials.assets,
-    liabilities: business.financials.liabilities,
-    equity: business.financials.equity,
-    overdueInvoices: business.financials.overdueInvoices,
-  }));
+const currentOwnerId = null; // resolved from auth later
 
 function money(value: number) {
   const sign = value < 0 ? '-' : '';
@@ -65,8 +33,66 @@ function margin(netProfit: number, revenue: number) {
 
 export default function DashboardBusinessesPage() {
   const router = useRouter();
-  const [businesses, setBusinesses] = useState(initialBusinesses);
-  const [businessToDelete, setBusinessToDelete] = useState<(typeof initialBusinesses)[number] | null>(null);
+  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [businessToDelete, setBusinessToDelete] = useState<any | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const apiBusinesses = await businessClient.getOwned();
+        const apiUsers = await usersClient.getAll();
+        const usersMap = new Map(apiUsers.map((u) => [String(u.id), u]));
+        const mapped = (apiBusinesses || []).map((business: any) => {
+          const ownerUser = usersMap.get(String(business.owner_id));
+          const ownerName = ownerUser ? `${ownerUser.first_name ?? ''} ${ownerUser.last_name ?? ''}`.trim() : '';
+          return {
+          id: business.id,
+          businessName: business.name || business.businessName || `Business ${business.id}`,
+          legalName: business.legal_name || business.legalName || '',
+          tradeName: business.trade_name || business.tradeName || '',
+          taxId: business.vat_number || business.taxId || '',
+          registrationNo: business.registration_no || business.registrationNo || '',
+          industry: business.industry || '',
+          ownerName,
+          country: business.country || business.address || '',
+          city: business.city || '',
+          timezone: business.timezone || '',
+          plan: business.subscription || business.plan || 'Starter',
+          billingCycle: business.billing_cycle || business.billingCycle || '',
+          nextBillingDate: business.next_billing_date || business.nextBillingDate || '',
+          status: business.status || 'Active',
+          monthlyRevenue: Number(business.financials?.monthlyRevenue || 0),
+          monthlyExpenses: Number(business.financials?.monthlyExpenses || 0),
+          netProfit: Number(business.financials?.netProfit || 0),
+          cashBalance: Number(business.financials?.cashBalance || 0),
+          receivables: Number(business.financials?.receivables || 0),
+          payables: Number(business.financials?.payables || 0),
+          assets: Number(business.financials?.assets || 0),
+          liabilities: Number(business.financials?.liabilities || 0),
+          equity: Number(business.financials?.equity || 0),
+          overdueInvoices: Number(business.financials?.overdueInvoices || 0),
+        };
+        });
+        if (!mounted) return;
+        setBusinesses(mapped);
+      } catch (err: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load owned businesses', err);
+        if (mounted) setError(err?.message || 'Failed to load businesses');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const totalRevenue = businesses.reduce((sum, row) => sum + row.monthlyRevenue, 0);
   const totalProfit = businesses.reduce((sum, row) => sum + row.netProfit, 0);

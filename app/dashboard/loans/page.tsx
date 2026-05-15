@@ -19,12 +19,10 @@ import {
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
+import { businessClient } from '@/app/lib/apiClients';
 
 const currentOwnerId = 5;
 const today = new Date('2026-04-13');
-
-const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
 
 type ViewMode = 'received' | 'offered';
 
@@ -275,11 +273,11 @@ function LoansPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialBusinessId = Number(searchParams.get('businessId'));
-  const defaultBusinessId = ownerBusinesses[0]?.id ?? 0;
 
-  const [selectedBusinessId, setSelectedBusinessId] = React.useState(
-    ownerBusinesses.some((business) => business.id === initialBusinessId) ? initialBusinessId : defaultBusinessId
-  );
+  const [businessOptions, setBusinessOptions] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const defaultBusinessId = businessOptions[0]?.id ?? 0;
+  const [selectedBusinessId, setSelectedBusinessId] = React.useState<number>(initialBusinessId || defaultBusinessId);
   const [viewMode, setViewMode] = React.useState<ViewMode>('received');
   const [receivedPaymentsByBusiness, setReceivedPaymentsByBusiness] = React.useState(paymentScheduleByBusiness);
   const [offeredPaymentsByBusinessState, setOfferedPaymentsByBusinessState] = React.useState(offeredPaymentsByBusiness);
@@ -295,13 +293,32 @@ function LoansPageContent() {
   });
 
   React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await businessClient.getOwned();
+        if (!mounted) return;
+        setBusinessOptions(list || []);
+        const defaultId = (list && list[0] && Number(list[0].id)) || 0;
+        setSelectedBusinessId(initialBusinessId && list.some((b: any) => Number(b.id) === initialBusinessId) ? initialBusinessId : defaultId);
+      } catch (err) {
+        console.error('Failed to load businesses for loans', err);
+        if (mounted) setBusinessOptions([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [initialBusinessId]);
+
+  React.useEffect(() => {
     const queryBusinessId = Number(searchParams.get('businessId'));
-    if (ownerBusinesses.some((business) => business.id === queryBusinessId) && queryBusinessId !== selectedBusinessId) {
+    if (businessOptions.some((business) => Number(business.id) === queryBusinessId) && queryBusinessId !== selectedBusinessId) {
       setSelectedBusinessId(queryBusinessId);
     }
-  }, [searchParams, selectedBusinessId]);
+  }, [searchParams, selectedBusinessId, businessOptions]);
 
-  const selectedBusiness = ownerBusinesses.find((business) => business.id === selectedBusinessId) ?? ownerBusinesses[0];
+  const selectedBusiness = businessOptions.find((business) => Number(business.id) === selectedBusinessId) ?? businessOptions[0];
 
   if (!selectedBusiness) {
     return <div className="text-slate-600">No businesses available.</div>;
@@ -526,9 +543,9 @@ function LoansPageContent() {
               onChange={(event) => handleBusinessChange(Number(event.target.value))}
               className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
             >
-              {ownerBusinesses.map((business) => (
+              {businessOptions.map((business: any) => (
                 <option key={business.id} value={business.id}>
-                  {business.businessName}
+                  {business.businessName ?? business.name}
                 </option>
               ))}
             </select>

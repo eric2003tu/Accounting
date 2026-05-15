@@ -1,0 +1,15 @@
+Business,Report Name,Type,Period,Generated,Status,Actions
+Acme Holdings Ltd,Balance Sheet,Balance Sheet,Q1 2024,2024-04-10,Ready,1
+Nexa Retail Group Ltd,Balance Sheet,Balance Sheet,Q2 2024,2024-07-10,Ready,6
+Acme Holdings Ltd,Income Statement,Income Statement,Q1 2024,2024-04-10,Ready,2
+Nexa Retail Group Ltd,Income Statement,Income Statement,Q2 2024,2024-07-10,Ready,7
+Acme Holdings Ltd,Journal,Journal,April 2024,2024-04-09,Ready,3
+Nexa Retail Group Ltd,Journal,Journal,Q2 2024,2024-07-09,Ready,8
+Acme Holdings Ltd,General Ledger,Ledger,Q1 2024,2024-04-11,Ready,11
+Acme Holdings Ltd,General Ledger,Ledger,Q2 2024,2024-07-11,Ready,12
+Nexa Retail Group Ltd,General Ledger,Ledger,Q2 2024,2024-07-12,Ready,13
+Peak Foods Distributors,General Ledger,Ledger,Q2 2024,2024-07-13,Processing,14
+Acme Holdings Ltd,Cash Book,Cash Book,April 2024,2024-04-08,Ready,4
+Peak Foods Distributors,Cash Book,Cash Book,Q2 2024,2024-07-08,Ready,9
+Acme Holdings Ltd,Trial Balance,Trial Balance,April 2024,2024-04-07,Processing,5
+Peak Foods Distributors,Trial Balance,Trial Balance,Q2 2024,2024-07-07,Ready,10

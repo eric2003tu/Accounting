@@ -17,15 +17,15 @@ import {
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
-import { purchasesByBusiness, type PurchaseRecord } from '@/app/lib/purchasesData';
+import { fetchPurchasesByBusiness, type PurchaseRecord } from '@/app/lib/purchasesData';
 import { buildPurchaseColumns, buildPurchaseFilters } from './purchasesTableConfig';
 import PurchasesEditModal from './PurchasesEditModal';
 
 type BusinessOption = {
   id: string;
   name: string;
-  legalName: string;
+  legalName?: string;
+  industry?: string;
 };
 
 type PurchasesBoardProps = {
@@ -70,8 +70,23 @@ export default function PurchasesBoard({ role, routeBase, businesses, defaultBus
   const selectedBusiness = businesses.find((business) => business.id === selectedBusinessId) ?? businesses[0];
 
   React.useEffect(() => {
-    const selectedBusinessNumericId = selectedBusiness?.id ? Number(selectedBusiness.id) : 0;
-    setPurchases(purchasesByBusiness[selectedBusinessNumericId] ?? []);
+    let mounted = true;
+    async function load() {
+      try {
+        const list = await fetchPurchasesByBusiness(selectedBusiness?.id ?? 0);
+        if (!mounted) return;
+        setPurchases(list);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load purchases', err);
+        if (mounted) setPurchases([]);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
   }, [selectedBusiness]);
 
   const handleBusinessChange = (businessId: string) => {
@@ -94,7 +109,7 @@ export default function PurchasesBoard({ role, routeBase, businesses, defaultBus
 
   const activeBusinessRecord =
     selectedBusiness && selectedBusiness.id !== 'all'
-      ? adminBusinesses.find((business) => String(business.id) === selectedBusiness.id) ?? null
+      ? businesses.find((business) => String((business as any).id) === selectedBusiness.id) ?? null
       : null;
 
   if (!selectedBusiness) {

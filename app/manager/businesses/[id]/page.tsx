@@ -1,5 +1,8 @@
+"use client";
+
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -14,10 +17,8 @@ import {
   UserRound,
 } from 'lucide-react';
 import SimpleChart from '@/app/components/manager/SimpleChart';
-import {
-  getAdminBusinessById,
-  getAdminUserById,
-} from '@/app/admin/data/adminDirectoryData';
+import businessClient from '@/app/lib/clients/businessClient';
+import usersClient from '@/app/lib/clients/usersClient';
 
 const currentOwnerId = 5;
 
@@ -43,27 +44,51 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default async function DashboardBusinessDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const businessId = Number(id);
-  const business = getAdminBusinessById(businessId);
+export default function DashboardBusinessDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id ?? '';
+  const businessId = String(id);
 
-  if (!business || business.ownerId !== currentOwnerId) {
-    notFound();
-  }
+  const [business, setBusiness] = useState<any | null>(null);
+  const [owner, setOwner] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const owner = getAdminUserById(currentOwnerId);
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const b = await businessClient.getById(businessId);
+        if (!mounted) return;
+        setBusiness(b);
+        if (b?.owner_id) {
+          const u = await usersClient.getById(String(b.owner_id));
+          if (!mounted) return;
+          setOwner(u);
+        }
+      } catch (err: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load business detail', err);
+        if (mounted) setError(err?.message || 'Failed to load business');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
 
-  if (!owner) {
-    notFound();
-  }
+    if (businessId) load();
+    return () => {
+      mounted = false;
+    };
+  }, [businessId]);
 
-  const profitMargin = ratio(business.financials.netProfit, business.financials.monthlyRevenue);
-  const currentRatio = ratio(business.financials.assets, business.financials.liabilities);
+  if (!id) return <div className="text-slate-600">Invalid business id.</div>;
+  if (loading) return <div className="text-slate-600">Loading...</div>;
+  if (error || !business) return <div className="text-slate-600">{error || 'Business not found.'}</div>;
+
+  const profitMargin = ratio(business.financials?.netProfit || 0, business.financials?.monthlyRevenue || 0);
+  const currentRatio = ratio(business.financials?.assets || 0, business.financials?.liabilities || 0);
 
   return (
     <div className="space-y-4 sm:space-y-6">

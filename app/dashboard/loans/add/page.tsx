@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -18,10 +18,9 @@ import {
   UserRound,
   Wallet,
 } from 'lucide-react';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
+import { businessClient } from '@/app/lib/apiClients';
 
 const currentOwnerId = 5;
-const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
 
 const currencies = ['USD', 'RWF', 'EUR', 'KES'];
 const receivedFacilityTypes = ['Term Loan', 'Working Capital', 'Asset Finance', 'Overdraft', 'Bridge Facility'];
@@ -37,6 +36,26 @@ function roundMoney(value: number) {
 
 export default function AddLoanPage() {
   const today = new Date().toISOString().slice(0, 10);
+
+  const [ownerBusinesses, setOwnerBusinesses] = useState<any[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await businessClient.getOwned();
+        if (!mounted) return;
+        setOwnerBusinesses(list || []);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load businesses', err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const [businessId, setBusinessId] = useState('');
   const [direction, setDirection] = useState<LoanDirection>('received');
@@ -194,11 +213,11 @@ export default function AddLoanPage() {
                     className="w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 py-3 pr-10 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-200"
                   >
                     <option value="">Select a business</option>
-                    {ownerBusinesses.map((business) => (
-                      <option key={business.id} value={business.id}>
-                        {business.businessName} - {business.legalName}
-                      </option>
-                    ))}
+                      {ownerBusinesses.map((business) => (
+                        <option key={business.id} value={business.id}>
+                          {business.name ?? business.businessName} - {business.legal_name ?? business.legalName}
+                        </option>
+                      ))}
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-5 w-5 text-slate-400" />
                 </div>

@@ -1,25 +1,20 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   BadgeCheck,
   Building2,
   CalendarClock,
-  CircleDollarSign,
-  CreditCard,
-  Mail,
-  Phone,
-  Scale,
   ShieldCheck,
   UserRound,
+  Mail,
+  Phone,
 } from 'lucide-react';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
-import {
-  getAdminBusinessById,
-  getAdminUserById,
-} from '@/app/admin/data/adminDirectoryData';
-
-const currentOwnerId = 5;
+import { businessClient, usersClient } from '@/app/lib/apiClients';
 
 function money(value: number) {
   const sign = value < 0 ? '-' : '';
@@ -27,10 +22,7 @@ function money(value: number) {
 }
 
 function ratio(numerator: number, denominator: number) {
-  if (!denominator) {
-    return '0.0%';
-  }
-
+  if (!denominator) return '0.0%';
   return `${((numerator / denominator) * 100).toFixed(1)}%`;
 }
 
@@ -43,27 +35,63 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default async function DashboardBusinessDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const businessId = Number(id);
-  const business = getAdminBusinessById(businessId);
+export default function DashboardBusinessDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
+  const router = useRouter();
+  const [business, setBusiness] = useState<any | null>(null);
+  const [owner, setOwner] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!business || business.ownerId !== currentOwnerId) {
-    notFound();
-  }
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const b = await businessClient.getById(id);
+        if (!mounted) return;
+        setBusiness(b || null);
+        const ownerId = (b && (b.owner_id || b.ownerId)) ?? null;
+        if (ownerId) {
+          try {
+            const u = await usersClient.getById(String(ownerId));
+            if (mounted) setOwner(u);
+          } catch (err) {
+            // ignore
+          }
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load business', err);
+        router.push('/dashboard/businesses');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
 
-  const owner = getAdminUserById(currentOwnerId);
+    return () => {
+      mounted = false;
+    };
+  }, [id, router]);
 
-  if (!owner) {
-    notFound();
-  }
+  if (loading) return <div className="text-slate-600">Loading business...</div>;
+  if (!business) return <div className="text-slate-600">Business not found.</div>;
 
-  const profitMargin = ratio(business.financials.netProfit, business.financials.monthlyRevenue);
-  const currentRatio = ratio(business.financials.assets, business.financials.liabilities);
+  const fin = business.financials || {
+    monthlyRevenue: 0,
+    monthlyExpenses: 0,
+    netProfit: 0,
+    cashBalance: 0,
+    receivables: 0,
+    payables: 0,
+    assets: 0,
+    liabilities: 0,
+    equity: 0,
+    overdueInvoices: 0,
+    revenueTrend: [],
+    expenseBreakdown: [],
+  };
+
+  const profitMargin = ratio(fin.netProfit, fin.monthlyRevenue);
+  const currentRatio = ratio(fin.assets, fin.liabilities);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -73,10 +101,7 @@ export default async function DashboardBusinessDetailPage({
 
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
-            <Link
-              href="/dashboard/businesses"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition-colors hover:text-green-700"
-            >
+            <Link href="/dashboard/businesses" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition-colors hover:text-green-700">
               <ArrowLeft className="h-4 w-4" />
               Back to My Businesses
             </Link>
@@ -87,9 +112,7 @@ export default async function DashboardBusinessDetailPage({
                 Owner View
               </p>
               <h1 className="mt-3 text-2xl font-bold text-slate-900 sm:text-3xl">My Business Financial Profile</h1>
-              <p className="mt-1 text-sm text-slate-600 sm:text-base">
-                Complete operating, registration, ownership, and financial performance view for your business.
-              </p>
+              <p className="mt-1 text-sm text-slate-600 sm:text-base">Complete operating, registration, ownership, and financial performance view for your business.</p>
             </div>
           </div>
 
@@ -98,9 +121,7 @@ export default async function DashboardBusinessDetailPage({
               <ShieldCheck className="h-4 w-4" />
               Ownership snapshot
             </div>
-            <p className="mt-1 break-words text-emerald-800">
-              Status: {business.status} · Plan: {business.subscription} · Next billing: {business.nextBillingDate}
-            </p>
+            <p className="mt-1 break-words text-emerald-800">Status: {business.status || 'Active'} · Plan: {business.subscription || 'Starter'} · Next billing: {business.next_billing_date || ''}</p>
           </div>
         </div>
       </section>
@@ -119,18 +140,15 @@ export default async function DashboardBusinessDetailPage({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-              <InfoRow label="Business name" value={business.businessName} />
-              <InfoRow label="Legal name" value={business.legalName} />
-              <InfoRow label="Trade name" value={business.tradeName} />
-              <InfoRow label="Tax ID" value={business.taxId} />
-              <InfoRow label="Registration no." value={business.registrationNo} />
-              <InfoRow label="Industry" value={business.industry} />
-              <InfoRow label="Country" value={business.country} />
-              <InfoRow label="City" value={business.city} />
-              <InfoRow label="Timezone" value={business.timezone} />
-              <InfoRow label="Plan" value={business.subscription} />
-              <InfoRow label="Billing cycle" value={business.billingCycle} />
-              <InfoRow label="Next billing" value={business.nextBillingDate} />
+              <InfoRow label="Business name" value={business.name || business.businessName || ''} />
+              <InfoRow label="Legal name" value={business.legal_name || ''} />
+              <InfoRow label="Industry" value={business.industry || ''} />
+              <InfoRow label="Country" value={business.country || ''} />
+              <InfoRow label="City" value={business.city || ''} />
+              <InfoRow label="Timezone" value={business.timezone || ''} />
+              <InfoRow label="Plan" value={business.subscription || 'Starter'} />
+              <InfoRow label="Billing cycle" value={business.billing_cycle || 'Monthly'} />
+              <InfoRow label="Next billing" value={business.next_billing_date || ''} />
             </div>
           </section>
 
@@ -146,12 +164,9 @@ export default async function DashboardBusinessDetailPage({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-              <InfoRow label="Full name" value={owner.name} />
-              <InfoRow label="Role" value={owner.role} />
-              <InfoRow label="Email" value={owner.email} />
-              <InfoRow label="Phone" value={owner.phone} />
-              <InfoRow label="Status" value={owner.status} />
-              <InfoRow label="MFA" value={owner.mfa} />
+              <InfoRow label="Full name" value={owner?.name || 'You'} />
+              <InfoRow label="Email" value={owner?.email || ''} />
+              <InfoRow label="Phone" value={owner?.phone || ''} />
             </div>
           </section>
         </div>
@@ -160,30 +175,18 @@ export default async function DashboardBusinessDetailPage({
           <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
             <h3 className="text-base font-semibold text-slate-900">Account quick actions</h3>
             <div className="mt-4 space-y-3">
-              <Link
-                href={`/dashboard/businesses/${businessId}/assign-leader`}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-4 text-sm font-bold text-white transition hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl"
-              >
+              <Link href={`/dashboard/businesses/${id}/assign-leader`} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-4 text-sm font-bold text-white transition hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl">
                 <UserRound className="h-5 w-5" />
                 Assign Manager/Accountant
               </Link>
-              <Link
-                href="/dashboard/profile"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
+              <Link href="/dashboard/profile" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                 Open my profile
               </Link>
-              <a
-                href={`mailto:${owner.email}`}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
+              <a href={`mailto:${owner?.email ?? ''}`} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                 <Mail className="h-4 w-4" />
                 Email me
               </a>
-              <a
-                href={`tel:${owner.phone}`}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
+              <a href={`tel:${owner?.phone ?? ''}`} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                 <Phone className="h-4 w-4" />
                 Call me
               </a>
@@ -195,15 +198,15 @@ export default async function DashboardBusinessDetailPage({
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between gap-4">
                 <dt className="text-slate-500">Cash balance</dt>
-                <dd className="font-semibold text-slate-900">{money(business.financials.cashBalance)}</dd>
+                <dd className="font-semibold text-slate-900">{money(fin.cashBalance)}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <dt className="text-slate-500">Receivables</dt>
-                <dd className="font-semibold text-slate-900">{money(business.financials.receivables)}</dd>
+                <dd className="font-semibold text-slate-900">{money(fin.receivables)}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <dt className="text-slate-500">Payables</dt>
-                <dd className="font-semibold text-slate-900">{money(business.financials.payables)}</dd>
+                <dd className="font-semibold text-slate-900">{money(fin.payables)}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <dt className="text-slate-500">Current ratio</dt>
@@ -215,75 +218,16 @@ export default async function DashboardBusinessDetailPage({
               </div>
               <div className="flex items-center justify-between gap-4">
                 <dt className="text-slate-500">Overdue invoices</dt>
-                <dd className="font-semibold text-amber-700">{business.financials.overdueInvoices}</dd>
+                <dd className="font-semibold text-amber-700">{fin.overdueInvoices}</dd>
               </div>
             </dl>
           </section>
         </aside>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Monthly Revenue</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(business.financials.monthlyRevenue)}</p>
-              <p className="mt-2 text-sm text-slate-600">Current month gross revenue</p>
-            </div>
-            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
-              <CircleDollarSign className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Monthly Expenses</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(business.financials.monthlyExpenses)}</p>
-              <p className="mt-2 text-sm text-slate-600">Current month operating costs</p>
-            </div>
-            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
-              <CreditCard className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Net Profit</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(business.financials.netProfit)}</p>
-              <p className="mt-2 text-sm text-slate-600">Margin {profitMargin}</p>
-            </div>
-            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
-              <BadgeCheck className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-green-100/70 blur-2xl" />
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Balance Position</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums sm:text-3xl">{money(business.financials.equity)}</p>
-              <p className="mt-2 text-sm text-slate-600">Assets {money(business.financials.assets)}</p>
-              <p className="text-sm text-slate-600">Liabilities {money(business.financials.liabilities)}</p>
-            </div>
-            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-100 to-emerald-100 p-3 text-green-700 shadow-sm">
-              <Scale className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-2">
-        <SimpleChart title="Revenue Trend" description="Last 6 months performance" data={business.financials.revenueTrend} type="line" />
-        <SimpleChart title="Expense Allocation" description="Monthly spend by major category" data={business.financials.expenseBreakdown} type="pie" />
+        <SimpleChart title="Revenue Trend" description="Last 6 months performance" data={fin.revenueTrend} type="line" />
+        <SimpleChart title="Expense Allocation" description="Monthly spend by major category" data={fin.expenseBreakdown} type="pie" />
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-5 lg:p-6">
@@ -295,17 +239,17 @@ export default async function DashboardBusinessDetailPage({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Assets</h3>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{money(business.financials.assets)}</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{money(fin.assets)}</p>
             <p className="mt-1 text-sm text-slate-500">Cash + receivables + operating assets</p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Liabilities</h3>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{money(business.financials.liabilities)}</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{money(fin.liabilities)}</p>
             <p className="mt-1 text-sm text-slate-500">Payables + debt obligations</p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Equity</h3>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{money(business.financials.equity)}</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{money(fin.equity)}</p>
             <p className="mt-1 text-sm text-slate-500">Net position after liabilities</p>
           </div>
         </div>

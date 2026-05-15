@@ -1,7 +1,10 @@
-'use client';
+"use client";
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import businessClient from '@/app/lib/clients/businessClient';
+import usersClient from '@/app/lib/clients/usersClient';
 import {
   ArrowLeft,
   Building2,
@@ -45,24 +48,52 @@ export default function AddBusinessOwnerPage() {
   const [sendInvite, setSendInvite] = useState(true);
   const [status, setStatus] = useState('Invited');
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    console.log({
-      ownerName,
-      ownerEmail,
-      ownerPhone,
-      businessName,
-      industry,
-      country,
-      taxId,
-      plan,
-      timezone,
-      requireMfa,
-      sendInvite,
-      status,
-      role: 'Owner',
-    });
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const businessPayload = {
+        name: businessName,
+        industry,
+        country,
+        vat_number: taxId || undefined,
+        timezone,
+        plan,
+      };
+
+      const createdBusiness = await businessClient.create(businessPayload);
+
+      const [first, ...rest] = ownerName.trim().split(' ');
+      const last = rest.join(' ');
+
+      const userPayload = {
+        email: ownerEmail,
+        first_name: first || '',
+        last_name: last || '',
+        phone: ownerPhone || undefined,
+        roles: ['owner'],
+        is_active: status === 'Active',
+        business_id: createdBusiness?.id,
+        require_mfa: requireMfa,
+        send_invite: sendInvite,
+      };
+
+      await usersClient.create(userPayload);
+
+      router.push('/admin/users');
+    } catch (err: any) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to create owner and business', err);
+      setError(err?.message || 'Failed to create owner');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -336,9 +367,10 @@ export default function AddBusinessOwnerPage() {
             <div className="mt-5 space-y-3">
               <button
                 type="submit"
-                className="inline-flex w-full items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
+                disabled={loading}
+                className="inline-flex w-full items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 disabled:opacity-60"
               >
-                Create Business Owner
+                {loading ? 'Creating…' : 'Create Business Owner'}
               </button>
               <Link
                 href="/admin/users"
@@ -347,6 +379,7 @@ export default function AddBusinessOwnerPage() {
                 Cancel
               </Link>
             </div>
+            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
           </section>
         </aside>
       </form>

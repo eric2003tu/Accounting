@@ -37,6 +37,8 @@ interface DataTableProps<T> {
   onSearch?: (query: string) => void;
   pagination?: boolean;
   itemsPerPage?: number;
+  /** When true, show a loading/placeholder state (optional) */
+  loading?: boolean;
   selectableRows?: boolean;
   exportable?: boolean;
   fileName?: string;
@@ -46,6 +48,7 @@ interface DataTableProps<T> {
   rowClassName?: string;
   onRowClick?: (row: T) => void;
   emptyMessage?: string;
+  
 }
 
 export default function DataTable<T extends Record<string, any>>({
@@ -68,6 +71,7 @@ export default function DataTable<T extends Record<string, any>>({
   rowClassName = '',
   onRowClick,
   emptyMessage = 'No data available',
+  loading = false,
 }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [searchQuery, setSearchQuery] = React.useState('');

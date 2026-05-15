@@ -9,7 +9,8 @@ import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationMo
 import ProductEditModal from '@/app/components/products/ProductEditModal';
 import { buildProductColumns, buildProductFilters } from '@/app/components/products/productTableConfig';
 import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
-import { productsByBusiness, ProductRecord } from '@/app/lib/productsData';
+import { fetchProductsByBusiness, ProductRecord } from '@/app/lib/productsData';
+import { productsClient } from '@/app/lib/apiClients';
 
 const managerBusinessId = 1;
 const managerBusiness = adminBusinesses.find((business) => business.id === managerBusinessId);
@@ -27,7 +28,27 @@ export default function ManagerProductsPage() {
     return <div className="text-slate-600">Manager business assignment is missing.</div>;
   }
 
-  const [products, setProducts] = React.useState<ProductRecord[]>(productsByBusiness[managerBusinessId] ?? []);
+  const [products, setProducts] = React.useState<ProductRecord[]>([]);
+
+  React.useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const list = await fetchProductsByBusiness(managerBusinessId);
+        if (!mounted) return;
+        setProducts(list);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load manager products', err);
+        if (mounted) setProducts([]);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
   const [productToDelete, setProductToDelete] = React.useState<ProductRecord | null>(null);
   const [productToEdit, setProductToEdit] = React.useState<ProductRecord | null>(null);
 
@@ -49,8 +70,17 @@ export default function ManagerProductsPage() {
       return;
     }
 
-    setProducts((currentProducts) => currentProducts.filter((product) => product.id !== productToDelete.id));
-    setProductToDelete(null);
+    (async () => {
+      try {
+        await productsClient.delete(String(productToDelete.id));
+        setProducts((currentProducts) => currentProducts.filter((product) => product.id !== productToDelete.id));
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to delete product', err);
+      } finally {
+        setProductToDelete(null);
+      }
+    })();
   };
 
   const handleSaveProduct = (updatedProduct: ProductRecord) => {

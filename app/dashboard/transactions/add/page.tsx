@@ -20,7 +20,7 @@ import {
   BadgeInfo,
   Plus,
 } from 'lucide-react';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
+import { businessClient } from '@/app/lib/apiClients';
 
 const transactionKinds = [
   { value: 'income', label: 'Money received' },
@@ -61,7 +61,6 @@ const accountCategories = [
 const taxRates = [0, 5, 7.5, 10, 12.5, 15, 18, 20];
 
 const currentOwnerId = 5;
-const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
 
 type BusinessOption = {
   id: string;
@@ -69,11 +68,8 @@ type BusinessOption = {
   legalName: string;
 };
 
-const businessOptions: BusinessOption[] = ownerBusinesses.map((business) => ({
-  id: String(business.id),
-  name: business.businessName,
-  legalName: business.legalName,
-}));
+// load businesses from API
+const initialBusinessOptions: BusinessOption[] = [];
 
 const ledgerImpactMap: Record<string, string> = {
   income: 'Increase revenue / cash / receivables',
@@ -86,6 +82,22 @@ const ledgerImpactMap: Record<string, string> = {
 
 export default function AddTransactionPage() {
   const [selectedBusinessId, setSelectedBusinessId] = useState('');
+  const [businessOptions, setBusinessOptions] = useState<BusinessOption[]>(initialBusinessOptions);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await businessClient.getOwned();
+        if (!mounted) return;
+        const options = (list || []).map((b: any) => ({ id: String(b.id), name: b.businessName, legalName: b.legalName }));
+        setBusinessOptions(options);
+      } catch (err) {
+        console.error('Failed to load business options for add transaction', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
   const [transactionKind, setTransactionKind] = useState('expense');
   const [paymentMethod, setPaymentMethod] = useState('Bank Transfer');
   const [taxRate, setTaxRate] = useState('0');

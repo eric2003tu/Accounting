@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
+import authClient from '@/app/lib/clients/authClient';
 
 export default function GetStartedPage() {
   const router = useRouter();
@@ -20,17 +21,27 @@ export default function GetStartedPage() {
     if (!acceptedTerms || isSubmitting) {
       return;
     }
-
     setIsSubmitting(true);
-    localStorage.setItem(
-      'pendingRegistration',
-      JSON.stringify({
-        fullName: fullName.trim(),
-        email: email.trim().toLowerCase(),
-      })
-    );
 
-    router.push(`/verrify-otp?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+    const payload = {
+      name: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      password,
+    };
+
+    authClient
+      .register(payload)
+      .then(() => authClient.login({ email: payload.email, password }))
+      .then(() => {
+        router.push('/dashboard');
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error(err);
+        // show a minimal alert for now
+        alert(err?.message || 'Registration failed');
+      })
+      .finally(() => setIsSubmitting(false));
   };
 
   return (

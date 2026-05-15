@@ -7,11 +7,11 @@ import { Building2, Plus, TrendingUp, BadgeCheck, Clock3 } from 'lucide-react';
 import StatCard from '@/app/components/manager/StatCard';
 import DataTable from '@/app/components/manager/DataTable';
 import SimpleChart from '@/app/components/manager/SimpleChart';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
+import { businessClient } from '@/app/lib/apiClients';
 
 const managerBusinessId = 1;
 
-const ownerBusinesses = adminBusinesses.filter((business) => business.id === managerBusinessId);
+const ownerBusinesses: any[] = [];
 
 type IncomeRecord = {
   id: number;

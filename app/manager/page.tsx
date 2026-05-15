@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import React from 'react';
 import Link from 'next/link';
 import {
   Plus,
@@ -17,10 +18,9 @@ import SimpleChart from '@/app/components/manager/SimpleChart';
 import TransactionCard from '@/app/components/manager/TransactionCard';
 import SummaryCard from '@/app/components/manager/SummaryCard';
 import QuickActionButton from '@/app/components/manager/QuickActionButton';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
+import { businessClient } from '@/app/lib/apiClients';
 
 const managerBusinessId = 1;
-const managerBusiness = adminBusinesses.find((business) => business.id === managerBusinessId);
 
 const recentTransactions = [
   {
@@ -70,10 +70,28 @@ function percent(numerator: number, denominator: number) {
 }
 
 export default function ManagerDashboardPage() {
+  const [managerBusiness, setManagerBusiness] = React.useState<any | null>(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await businessClient.getOwned();
+        if (!mounted) return;
+        const found = (list || []).find((b: any) => Number(b.id) === managerBusinessId) ?? null;
+        setManagerBusiness(found);
+      } catch (err) {
+        console.error('Failed to load manager business', err);
+        if (mounted) setManagerBusiness(null);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   if (!managerBusiness) {
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-6 text-slate-700">
-        Manager business assignment is missing.
+        Manager business assignment is missing or loading.
       </div>
     );
   }
@@ -86,7 +104,7 @@ export default function ManagerDashboardPage() {
     profit: managerBusiness.financials.netProfit,
     profitMargin: percent(managerBusiness.financials.netProfit, managerBusiness.financials.monthlyRevenue),
     revenueTrend: managerBusiness.financials.revenueTrend,
-    cashFlowTrend: managerBusiness.financials.revenueTrend.map((item) => ({
+    cashFlowTrend: managerBusiness.financials.revenueTrend.map((item: any) => ({
       label: item.label,
       value: Math.round(item.value * 0.64),
     })),

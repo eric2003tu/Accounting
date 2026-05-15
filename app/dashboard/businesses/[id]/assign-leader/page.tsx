@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -17,7 +17,7 @@ import {
   User,
   X,
 } from 'lucide-react';
-import { getAdminBusinessById, getAdminUserById, adminUsers } from '@/app/admin/data/adminDirectoryData';
+import { businessClient, usersClient, businessUsersClient } from '@/app/lib/apiClients';
 
 const currentOwnerId = 5;
 
@@ -59,21 +59,63 @@ export default function AssignLeaderPage() {
 
   const [createdAccountants, setCreatedAccountants] = useState<any[]>([]);
 
+  const [business, setBusiness] = useState<any | null>(null);
+  const [owner, setOwner] = useState<any | null>(null);
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   const id = params.id as string;
   const businessId = Number(id);
-  const business = getAdminBusinessById(businessId);
-  const owner = getAdminUserById(currentOwnerId);
 
-  // Validation - redirect if unauthorized or not found
-  React.useEffect(() => {
-    if (!business || business.ownerId !== currentOwnerId || !owner) {
-      router.push('/dashboard/businesses');
-    }
-  }, [business, owner, router]);
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      setFetchError(null);
+      try {
+        const [b, businessUsers, users] = await Promise.all([
+          businessClient.getById(String(businessId)),
+          businessUsersClient.getAll(`businessId=${businessId}`),
+          usersClient.getAll(),
+        ]);
+
+        if (!mounted) return;
+        // Merge users with business-user membership info
+        const mappedUsers = (users || []).map((u: any) => {
+          const bu = (businessUsers || []).find((x: any) => String(x.user_id) === String(u.id));
+          return {
+            ...u,
+            isAssigned: !!bu,
+            businessRole: bu?.role ?? null,
+          };
+        });
+
+        const ownerUser = mappedUsers.find((u: any) => String(u.id) === String(currentOwnerId)) || (b && mappedUsers.find((u: any) => String(u.id) === String(b.ownerId)));
+
+        setBusiness(b);
+        setUsersList(mappedUsers || []);
+        setOwner(ownerUser || null);
+        setLoading(false);
+        // Validate - redirect if unauthorized or not found
+        if (!b || b.ownerId !== currentOwnerId || !ownerUser) {
+          router.push('/dashboard/businesses');
+        }
+      } catch (err) {
+        console.error('Failed to load business or users', err);
+        if (!mounted) return;
+        setFetchError('Failed to load business or users.');
+        setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [businessId, router]);
 
   // Filter available accountants (active status, Accountant role)
   const availableAccountants = useMemo(() => {
-    const allAccountants = [...adminUsers, ...createdAccountants].filter(
+    const source = [...usersList, ...createdAccountants];
+    return source.filter(
       (user) =>
         user.role === 'Accountant' &&
         user.status === 'Active' &&
@@ -81,15 +123,20 @@ export default function AssignLeaderPage() {
           user.name.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
           user.email.toLowerCase().includes(state.searchQuery.toLowerCase()))
     );
-    return allAccountants;
-  }, [state.searchQuery, createdAccountants]);
+  }, [state.searchQuery, usersList, createdAccountants]);
 
   // Get selected user from both original and created accountants
-  const selectedUser = state.selectedUserId 
-    ? getAdminUserById(state.selectedUserId) || createdAccountants.find(u => u.id === state.selectedUserId)
+  const selectedUser = state.selectedUserId
+    ? usersList.find((u) => u.id === state.selectedUserId) || createdAccountants.find((u) => u.id === state.selectedUserId)
     : null;
 
-  // Guard: Don't render if business or owner is invalid
+  // Loading / error guards
+  if (loading) return null;
+  if (fetchError) return (
+    <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+      <p className="text-sm font-semibold text-red-900">{fetchError}</p>
+    </div>
+  );
   if (!business || business.ownerId !== currentOwnerId || !owner) {
     return null;
   }
@@ -132,9 +179,10 @@ export default function AssignLeaderPage() {
       return;
     }
 
-    // Create new accountant
+    // Create new accountant (local optimistic object)
+    const maxExistingId = Math.max(0, ...usersList.map((u) => Number(u.id || 0)), ...createdAccountants.map((u) => Number(u.id || 0)));
     const newAccountant = {
-      id: Math.max(...adminUsers.map(u => u.id), ...createdAccountants.map(u => u.id), 0) + 1,
+      id: maxExistingId + 1,
       name: createForm.name.trim(),
       email: createForm.email.trim(),
       phone: createForm.phone.trim(),

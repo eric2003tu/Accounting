@@ -1,19 +1,55 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChartColumn, FileText, BadgeCheck } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
+import reportsClient from '@/app/lib/clients/reportsClient';
 
-const reports = [
-  { id: 1, name: 'Access Review', period: 'Q1 2026', owner: 'Security Team', status: 'Ready', generated: '2026-04-01' },
-  { id: 2, name: 'Subscription Health', period: 'Mar 2026', owner: 'Billing Team', status: 'Ready', generated: '2026-04-02' },
-  { id: 3, name: 'Incident Summary', period: 'Week 14', owner: 'Ops Team', status: 'Processing', generated: '2026-04-10' },
-  { id: 4, name: 'Integration Drift', period: 'Apr 2026', owner: 'Platform Team', status: 'Ready', generated: '2026-04-08' },
-  { id: 5, name: 'Role Assignment Delta', period: 'Q1 2026', owner: 'IAM Team', status: 'Ready', generated: '2026-04-04' },
-];
-
+type UiReport = {
+  id: number | string;
+  name: string;
+  period?: string;
+  owner?: string;
+  status?: string;
+  generated?: string;
+};
 export default function AdminReportsPage() {
+  const [reports, setReports] = useState<UiReport[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const apiReports = await reportsClient.getAll();
+        if (!mounted) return;
+        const mapped = apiReports.map((r: any) => ({
+          id: r.id,
+          name: r.name || r.title || `Report ${r.id}`,
+          period: r.period || r.period_label || '',
+          owner: r.owner || r.generated_by || '',
+          status: r.status || 'Ready',
+          generated: r.generated_at || r.created_at || '',
+        }));
+        setReports(mapped);
+      } catch (err: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load reports', err);
+        if (mounted) setError(err?.message || 'Failed to load reports');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const ready = reports.filter((item) => item.status === 'Ready').length;
 
   return (
@@ -60,6 +96,7 @@ export default function AdminReportsPage() {
           },
         ]}
         searchPlaceholder="Search reports..."
+        loading={loading}
       />
     </div>
   );

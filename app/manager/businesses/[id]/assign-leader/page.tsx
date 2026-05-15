@@ -17,7 +17,7 @@ import {
   User,
   X,
 } from 'lucide-react';
-import { getAdminBusinessById, getAdminUserById, adminUsers } from '@/app/admin/data/adminDirectoryData';
+import { businessClient, usersClient, businessUsersClient } from '@/app/lib/apiClients';
 
 const currentOwnerId = 5;
 
@@ -61,32 +61,43 @@ export default function AssignLeaderPage() {
 
   const id = params.id as string;
   const businessId = Number(id);
-  const business = getAdminBusinessById(businessId);
-  const owner = getAdminUserById(currentOwnerId);
+  const [business, setBusiness] = useState<any | null>(null);
+  const [owner, setOwner] = useState<any | null>(null);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
 
   // Validation - redirect if unauthorized or not found
   React.useEffect(() => {
-    if (!business || business.ownerId !== currentOwnerId || !owner) {
-      router.push('/manager/businesses');
-    }
-  }, [business, owner, router]);
+    let mounted = true;
+    (async () => {
+      try {
+        const [b, users, ownerUser] = await Promise.all([
+          businessClient.getById(String(businessId)),
+          usersClient.getAll(),
+          usersClient.getById(String(currentOwnerId)),
+        ]);
+        if (!mounted) return;
+        setBusiness(b || null);
+        setAllUsers(users || []);
+        setOwner(ownerUser || null);
+      } catch (err) {
+        console.error('Failed to load business or users for assign leader', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [businessId]);
 
   // Filter available accountants (active status, Accountant role)
   const availableAccountants = useMemo(() => {
-    const allAccountants = [...adminUsers, ...createdAccountants].filter(
-      (user) =>
-        user.role === 'Accountant' &&
-        user.status === 'Active' &&
-        (state.searchQuery === '' ||
-          user.name.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(state.searchQuery.toLowerCase()))
+    const apiUsers = allUsers.filter((user) => user.role === 'Accountant' && user.status === 'Active');
+    const allAccountants = [...apiUsers, ...createdAccountants].filter((user) =>
+      state.searchQuery === '' || user.name.toLowerCase().includes(state.searchQuery.toLowerCase()) || user.email.toLowerCase().includes(state.searchQuery.toLowerCase())
     );
     return allAccountants;
-  }, [state.searchQuery, createdAccountants]);
+  }, [state.searchQuery, createdAccountants, allUsers]);
 
   // Get selected user from both original and created accountants
-  const selectedUser = state.selectedUserId 
-    ? getAdminUserById(state.selectedUserId) || createdAccountants.find(u => u.id === state.selectedUserId)
+  const selectedUser = state.selectedUserId
+    ? allUsers.find((u) => u.id === state.selectedUserId) || createdAccountants.find((u) => u.id === state.selectedUserId)
     : null;
 
   // Guard: Don't render if business or owner is invalid
@@ -134,7 +145,7 @@ export default function AssignLeaderPage() {
 
     // Create new accountant
     const newAccountant = {
-      id: Math.max(...adminUsers.map(u => u.id), ...createdAccountants.map(u => u.id), 0) + 1,
+      id: Math.max(...allUsers.map(u => u.id), ...createdAccountants.map(u => u.id), 0) + 1,
       name: createForm.name.trim(),
       email: createForm.email.trim(),
       phone: createForm.phone.trim(),

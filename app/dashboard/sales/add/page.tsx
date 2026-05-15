@@ -1,27 +1,39 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SalesCreateForm from '@/app/components/sales/SalesCreateForm';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
-
-const currentOwnerId = 5;
-
-const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
+import { businessClient } from '@/app/lib/apiClients';
 
 function AddSalePageContent() {
   const searchParams = useSearchParams();
   const initialBusinessId = searchParams.get('businessId') ?? '';
+  const [businessOptions, setBusinessOptions] = useState<{ id: string; name: string; legalName?: string }[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const businessOptions = ownerBusinesses.map((business) => ({
-    id: String(business.id),
-    name: business.businessName,
-    legalName: business.legalName,
-  }));
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const list = await businessClient.getOwned();
+        if (!mounted) return;
+        const opts = (list || []).map((business: any) => ({ id: String(business.id), name: business.businessName ?? business.name, legalName: business.legal_name ?? business.legalName }));
+        setBusinessOptions(opts);
+      } catch (err) {
+        console.error('Failed to load businesses for add sale', err);
+        if (mounted) setBusinessOptions([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
 
-  const safeDefaultBusinessId = businessOptions.some((item) => item.id === initialBusinessId)
-    ? initialBusinessId
-    : businessOptions[0]?.id ?? '';
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  if (loading) return <div className="text-slate-600">Loading add sale form...</div>;
+
+  const safeDefaultBusinessId = businessOptions.some((item) => item.id === initialBusinessId) ? initialBusinessId : businessOptions[0]?.id ?? '';
 
   return (
     <SalesCreateForm

@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { salesClient } from '@/app/lib/apiClients';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { productsByBusiness } from '@/app/lib/productsData';
+import { fetchProductsByBusiness, ProductRecord } from '@/app/lib/productsData';
 import {
   ArrowLeft,
   BadgeInfo,
@@ -26,7 +27,7 @@ import {
 type BusinessOption = {
   id: string;
   name: string;
-  legalName: string;
+  legalName?: string;
 };
 
 type SalesCreateFormProps = {
@@ -89,7 +90,27 @@ export default function SalesCreateForm({
   const [collateral, setCollateral] = useState('');
 
   const selectedBusiness = businesses.find((item) => item.id === businessId) ?? null;
-  const businessProducts = useMemo(() => productsByBusiness[Number(businessId)] ?? [], [businessId]);
+  const [businessProducts, setBusinessProducts] = useState<ProductRecord[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const list = await fetchProductsByBusiness(Number(businessId));
+        if (!mounted) return;
+        setBusinessProducts(list);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load products for business', err);
+        if (mounted) setBusinessProducts([]);
+      }
+    }
+
+    if (businessId) load();
+    return () => {
+      mounted = false;
+    };
+  }, [businessId]);
   const selectedProduct = useMemo(
     () => businessProducts.find((item) => String(item.id) === selectedProductId) ?? null,
     [businessProducts, selectedProductId],
@@ -200,7 +221,7 @@ export default function SalesCreateForm({
     setSubtotal(computedSubtotal.toFixed(2));
   }, [computedSubtotal, saleType]);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const payload = {
@@ -240,9 +261,13 @@ export default function SalesCreateForm({
       grossProfit: preview.grossProfit,
       grossMargin: preview.grossMargin,
     };
-
-    console.log(payload);
-    router.push(`${submitHrefBase}?businessId=${businessId}`);
+    try {
+      await salesClient.create(payload);
+      router.push(`${submitHrefBase}?businessId=${businessId}`);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to create sale', err);
+    }
   };
 
   return (

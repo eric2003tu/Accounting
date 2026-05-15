@@ -17,26 +17,13 @@ import SimpleChart from '@/app/components/dashboard/SimpleChart';
 import TransactionCard from '@/app/components/dashboard/TransactionCard';
 import SummaryCard from '@/app/components/dashboard/SummaryCard';
 import QuickActionButton from '@/app/components/dashboard/QuickActionButton';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
-
-const currentOwnerId = 5;
-
-const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
+import { businessClient } from '@/app/lib/apiClients';
 
 type BusinessOption = {
   id: string;
   name: string;
   legalName: string;
 };
-
-const businessOptions: BusinessOption[] = [
-  { id: 'all', name: 'All Businesses', legalName: 'Portfolio Overview' },
-  ...ownerBusinesses.map((business) => ({
-    id: String(business.id),
-    name: business.businessName,
-    legalName: business.legalName,
-  })),
-];
 
 const recentTransactionsByBusiness: Record<string, Array<{
   icon: typeof ArrowUpRight;
@@ -165,20 +152,40 @@ function percent(numerator: number, denominator: number) {
 
 export default function DashboardPage() {
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>('all');
+  const [businessOptionsState, setBusinessOptionsState] = useState<BusinessOption[]>([{ id: 'all', name: 'All Businesses', legalName: 'Portfolio Overview' }]);
+  const [ownerBusinessesState, setOwnerBusinessesState] = useState<any[]>([]);
 
-  const selectedBusiness =
-    businessOptions.find((business) => business.id === selectedBusinessId) ?? businessOptions[0];
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await businessClient.getOwned();
+        if (!mounted) return;
+        setOwnerBusinessesState(list || []);
+        setBusinessOptionsState([{ id: 'all', name: 'All Businesses', legalName: 'Portfolio Overview' }, ...(list || []).map((b: any) => ({ id: String(b.id), name: b.businessName, legalName: b.legalName }))]);
+      } catch (err) {
+        console.error('Failed to load dashboard businesses', err);
+        if (mounted) {
+          setOwnerBusinessesState([]);
+          setBusinessOptionsState([{ id: 'all', name: 'All Businesses', legalName: 'Portfolio Overview' }]);
+        }
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const selectedBusiness = businessOptionsState.find((business) => business.id === selectedBusinessId) ?? businessOptionsState[0];
 
   const selectedBusinessRecord = selectedBusinessId === 'all'
     ? null
-    : ownerBusinesses.find((business) => String(business.id) === selectedBusinessId) ?? null;
+    : ownerBusinessesState.find((business) => String(business.id) === selectedBusinessId) ?? null;
 
-  const portfolioStats = ownerBusinesses.reduce(
+  const portfolioStats = ownerBusinessesState.reduce(
     (totals, business) => {
-      totals.income += business.financials.monthlyRevenue;
-      totals.expenses += business.financials.monthlyExpenses;
-      totals.balance += business.financials.cashBalance;
-      totals.pending += business.financials.overdueInvoices;
+      totals.income += business.financials?.monthlyRevenue || 0;
+      totals.expenses += business.financials?.monthlyExpenses || 0;
+      totals.balance += business.financials?.cashBalance || 0;
+      totals.pending += business.financials?.overdueInvoices || 0;
       return totals;
     },
     { income: 0, expenses: 0, balance: 0, pending: 0 }
@@ -193,7 +200,7 @@ export default function DashboardPage() {
         profit: selectedBusinessRecord.financials.netProfit,
         profitMargin: percent(selectedBusinessRecord.financials.netProfit, selectedBusinessRecord.financials.monthlyRevenue),
         revenueTrend: selectedBusinessRecord.financials.revenueTrend,
-        cashFlowTrend: selectedBusinessRecord.financials.revenueTrend.map((item) => ({ label: item.label, value: Math.round(item.value * 0.62) })),
+        cashFlowTrend: selectedBusinessRecord.financials.revenueTrend.map((item: any) => ({ label: item.label, value: Math.round(item.value * 0.62) })),
         expenseBreakdown: selectedBusinessRecord.financials.expenseBreakdown,
       }
     : {
@@ -257,11 +264,11 @@ export default function DashboardPage() {
               onChange={(event) => setSelectedBusinessId(event.target.value)}
               className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
             >
-              {businessOptions.map((business) => (
-                <option key={business.id} value={business.id}>
-                  {business.name}
-                </option>
-              ))}
+              {businessOptionsState.map((business: BusinessOption) => (
+                  <option key={business.id} value={business.id}>
+                    {business.name}
+                  </option>
+                ))}
             </select>
             <p className="mt-2 text-sm text-slate-600">{selectedBusiness.legalName}</p>
           </div>
@@ -344,7 +351,7 @@ export default function DashboardPage() {
         {/* Recent Transactions */}
         <div className="lg:col-span-2 space-y-3">
           <h2 className="text-lg font-semibold text-slate-900">Recent Transactions</h2>
-          {recentTransactions.map((transaction, idx) => (
+          {recentTransactions.map((transaction: any, idx: number) => (
             <TransactionCard
               key={idx}
               icon={transaction.icon}

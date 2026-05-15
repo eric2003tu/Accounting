@@ -18,7 +18,9 @@ import {
   TrendingUp,
   Wallet,
 } from 'lucide-react';
-import { getAdminUserById } from '@/app/admin/data/adminDirectoryData';
+import { usersClient } from '@/app/lib/apiClients';
+import { businessClient } from '@/app/lib/apiClients';
+import { useRouter } from 'next/navigation';
 
 const currentOwnerId = 5;
 
@@ -81,7 +83,24 @@ function money(value: number) {
 }
 
 export default function AddBusinessPage() {
-  const owner = getAdminUserById(currentOwnerId);
+  const [owner, setOwner] = useState<any | null>(null);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const u = await usersClient.getById(String(currentOwnerId));
+        if (!mounted) return;
+        setOwner(u || null);
+      } catch (err) {
+        console.error('Failed to load owner user', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [businessName, setBusinessName] = useState('');
   const [legalName, setLegalName] = useState('');
@@ -131,6 +150,8 @@ export default function AddBusinessPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     const payload = {
       id: Date.now(),
@@ -167,8 +188,35 @@ export default function AddBusinessPage() {
           .map((row) => ({ label: row.label.trim(), value: Number.parseFloat(row.value || '0') })),
       },
     };
+    (async () => {
+      try {
+        const created = await businessClient.create({
+          name: businessName,
+          legal_name: legalName,
+          trade_name: tradeName,
+          industry,
+          vat_number: taxId,
+          registration_no: registrationNo,
+          country,
+          city,
+          timezone,
+          subscription,
+          billing_cycle: billingCycle,
+          next_billing_date: nextBillingDate,
+          status,
+          owner_id: currentOwnerId,
+          financials: payload.financials,
+        });
 
-    console.log(payload);
+        router.push('/manager/businesses');
+      } catch (err: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to create business', err);
+        setError(err?.message || 'Failed to create business');
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
 
   return (

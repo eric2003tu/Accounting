@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -19,7 +19,7 @@ import {
   Store,
   Tag,
 } from 'lucide-react';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
+import { businessClient } from '@/app/lib/apiClients';
 
 const expenseCategories = [
   'Office Supplies',
@@ -48,23 +48,36 @@ const paymentMethods = [
 ];
 
 const taxRates = [0, 5, 7.5, 10, 12.5, 15, 18, 20];
-const currentOwnerId = 5;
-const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
-
 type BusinessOption = {
   id: string;
   name: string;
   legalName: string;
 };
 
-const businessOptions: BusinessOption[] = ownerBusinesses.map((business) => ({
-  id: String(business.id),
-  name: business.businessName,
-  legalName: business.legalName,
-}));
 
 export default function AddExpensePage() {
   const today = new Date().toISOString().slice(0, 10);
+
+  const [businessOptions, setBusinessOptions] = useState<BusinessOption[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await businessClient.getOwned();
+        if (!mounted) return;
+        const opts = (list || []).map((b: any) => ({ id: String(b.id), name: b.name ?? b.businessName ?? '', legalName: b.legal_name ?? '' }));
+        setBusinessOptions(opts);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load businesses', err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const [selectedBusinessId, setSelectedBusinessId] = useState('');
   const [description, setDescription] = useState('');

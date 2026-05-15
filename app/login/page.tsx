@@ -5,94 +5,32 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
-
-type MockUser = {
-  email: string;
-  password: string;
-  role: 'admin' | 'business_owner' | 'manager';
-  label: string;
-};
-
-const mockUsers: MockUser[] = [
-  {
-    email: 'admin@accounting.app',
-    password: 'Admin@123',
-    role: 'admin',
-    label: 'System Admin',
-  },
-  {
-    email: 'owner@accounting.app',
-    password: 'Owner@123',
-    role: 'business_owner',
-    label: 'Business Owner',
-  },
-  {
-    email: 'manager@accounting.app',
-    password: 'Manager@123',
-    role: 'manager',
-    label: 'Business Manager',
-  },
-];
+import authClient from '@/app/lib/clients/authClient';
 
 export default function LoginPage() {
   const router = useRouter();
-  const defaultRole: 'admin' | 'business_owner' | 'manager' = 'business_owner';
-  const defaultUser = mockUsers.find((user) => user.role === defaultRole)!;
-
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'business_owner' | 'manager'>(defaultRole);
-  const [email, setEmail] = useState(defaultUser.email);
-  const [password, setPassword] = useState(defaultUser.password);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-
-  const applyRoleCredentials = (role: 'admin' | 'business_owner' | 'manager') => {
-    const user = mockUsers.find((item) => item.role === role);
-    if (!user) {
-      return;
-    }
-
-    setSelectedRole(role);
-    setEmail(user.email);
-    setPassword(user.password);
-    setError('');
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
-
-    const match = mockUsers.find(
-      (user) =>
-        user.role === selectedRole &&
-        user.email.toLowerCase() === email.trim().toLowerCase() &&
-        user.password === password
-    );
-
-    if (!match) {
-      setError('Invalid credentials for selected role. Use the matching mock account.');
-      return;
-    }
-
-    localStorage.setItem(
-      'mockAuthUser',
-      JSON.stringify({
-        email: match.email,
-        role: match.role,
-        label: match.label,
+    setIsSubmitting(true);
+    authClient
+      .login({ email: email.trim().toLowerCase(), password })
+      .then(() => {
+        // token stored by authClient; redirect to dashboard
+        router.push('/dashboard');
       })
-    );
-
-    if (match.role === 'admin') {
-      router.push('/admin');
-      return;
-    }
-
-    if (match.role === 'manager') {
-      router.push('/manager');
-      return;
-    }
-
-    router.push('/dashboard');
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error(err);
+        setError(err?.message || 'Login failed.');
+      })
+      .finally(() => setIsSubmitting(false));
   };
 
   return (
@@ -124,44 +62,7 @@ export default function LoginPage() {
             </div>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-              <div>
-                <p className="mb-2 block text-sm font-medium text-slate-700">Login as</p>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition ${selectedRole === 'business_owner' ? 'border-green-500 bg-green-50 text-green-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}>
-                    <input
-                      type="radio"
-                      name="role"
-                      value="business_owner"
-                      checked={selectedRole === 'business_owner'}
-                      onChange={() => applyRoleCredentials('business_owner')}
-                      className="h-4 w-4 border-slate-300 text-green-600 focus:ring-green-500"
-                    />
-                    Business Owner
-                  </label>
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition ${selectedRole === 'admin' ? 'border-green-500 bg-green-50 text-green-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}>
-                    <input
-                      type="radio"
-                      name="role"
-                      value="admin"
-                      checked={selectedRole === 'admin'}
-                      onChange={() => applyRoleCredentials('admin')}
-                      className="h-4 w-4 border-slate-300 text-green-600 focus:ring-green-500"
-                    />
-                    System Admin
-                  </label>
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition ${selectedRole === 'manager' ? 'border-green-500 bg-green-50 text-green-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}>
-                    <input
-                      type="radio"
-                      name="role"
-                      value="manager"
-                      checked={selectedRole === 'manager'}
-                      onChange={() => applyRoleCredentials('manager')}
-                      className="h-4 w-4 border-slate-300 text-green-600 focus:ring-green-500"
-                    />
-                    Manager
-                  </label>
-                </div>
-              </div>
+              {/* Email & Password fields */}
 
               <div>
                 <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">
@@ -225,9 +126,10 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-green-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-green-700"
+                disabled={isSubmitting}
+                className="w-full rounded-lg bg-green-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
               >
-                Sign In
+                {isSubmitting ? 'Signing in…' : 'Sign In'}
               </button>
             </form>
 

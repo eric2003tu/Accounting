@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Building2,
@@ -10,28 +10,29 @@ import {
 } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
-import { adminBusinesses, getAdminUserById } from '@/app/admin/data/adminDirectoryData';
+import businessClient from '@/app/lib/clients/businessClient';
+import usersClient from '@/app/lib/clients/usersClient';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
 
-const initialBusinesses = adminBusinesses.map((business) => ({
-  id: business.id,
-  businessName: business.businessName,
-  ownerId: business.ownerId,
-  ownerName: getAdminUserById(business.ownerId)?.name || 'Unknown Owner',
-  country: business.country,
-  plan: business.subscription,
-  status: business.status,
-  monthlyRevenue: business.financials.monthlyRevenue,
-  monthlyExpenses: business.financials.monthlyExpenses,
-  netProfit: business.financials.netProfit,
-  cashBalance: business.financials.cashBalance,
-  receivables: business.financials.receivables,
-  payables: business.financials.payables,
-  assets: business.financials.assets,
-  liabilities: business.financials.liabilities,
-  equity: business.financials.equity,
-  overdueInvoices: business.financials.overdueInvoices,
-}));
+type UiBusiness = {
+  id: number | string;
+  businessName: string;
+  ownerId: number | string;
+  ownerName: string;
+  country?: string;
+  plan?: string;
+  status?: string;
+  monthlyRevenue: number;
+  monthlyExpenses: number;
+  netProfit: number;
+  cashBalance: number;
+  receivables: number;
+  payables: number;
+  assets: number;
+  liabilities: number;
+  equity: number;
+  overdueInvoices: number;
+};
 
 function money(value: number) {
   const sign = value < 0 ? '-' : '';
@@ -46,11 +47,60 @@ function margin(netProfit: number, revenue: number) {
 }
 
 export default function AdminBusinessesPage() {
-  const [businesses, setBusinesses] = useState(initialBusinesses);
-  const [businessToDelete, setBusinessToDelete] = useState<(typeof initialBusinesses)[number] | null>(null);
+  const [businesses, setBusinesses] = useState<UiBusiness[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const totalRevenue = businesses.reduce((sum, row) => sum + row.monthlyRevenue, 0);
-  const totalProfit = businesses.reduce((sum, row) => sum + row.netProfit, 0);
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const [apiBusinesses, apiUsers] = await Promise.all([businessClient.getAll(), usersClient.getAll()]);
+        const usersMap = new Map(apiUsers.map((u) => [String(u.id), u]));
+        const mapped = apiBusinesses.map((b: any) => {
+          const owner = usersMap.get(String(b.owner_id)) as any;
+          const financials = b.financials || {};
+          return {
+            id: b.id,
+            businessName: b.name || b.businessName || `Business ${b.id}`,
+            ownerId: b.owner_id ?? (owner?.id ?? ''),
+            ownerName: owner ? `${owner.first_name ?? ''} ${owner.last_name ?? ''}`.trim() || owner.email : 'Unknown Owner',
+            country: b.country || b.address || '',
+            plan: b.subscription || b.plan || 'Starter',
+            status: b.status || 'Active',
+            monthlyRevenue: Number(financials.monthlyRevenue || 0),
+            monthlyExpenses: Number(financials.monthlyExpenses || 0),
+            netProfit: Number(financials.netProfit || 0),
+            cashBalance: Number(financials.cashBalance || 0),
+            receivables: Number(financials.receivables || 0),
+            payables: Number(financials.payables || 0),
+            assets: Number(financials.assets || 0),
+            liabilities: Number(financials.liabilities || 0),
+            equity: Number(financials.equity || 0),
+            overdueInvoices: Number(financials.overdueInvoices || 0),
+          } as UiBusiness;
+        });
+        if (!mounted) return;
+        setBusinesses(mapped);
+      } catch (err: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load businesses', err);
+        if (mounted) setError(err?.message || 'Failed to load businesses');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  const [businessToDelete, setBusinessToDelete] = useState<UiBusiness | null>(null);
+
+  const totalRevenue = businesses.reduce((sum, row) => sum + (row.monthlyRevenue || 0), 0);
+  const totalProfit = businesses.reduce((sum, row) => sum + (row.netProfit || 0), 0);
   const atRisk = businesses.filter((row) => row.overdueInvoices >= 5 || row.netProfit < 0).length;
   const portfolioMargin = margin(totalProfit, totalRevenue);
 
@@ -100,7 +150,10 @@ export default function AdminBusinessesPage() {
         />
       </div>
 
-      <DataTable
+      {error ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      ) : (
+        <DataTable
         title="Business Financial Directory"
         description="Complete financial profile across all onboarded businesses"
         data={businesses}
@@ -279,7 +332,9 @@ export default function AdminBusinessesPage() {
           },
         ]}
         searchPlaceholder="Search businesses, owners, or financial values..."
+        loading={loading}
       />
+      )}
 
       <DeleteConfirmationModal
         isOpen={!!businessToDelete}

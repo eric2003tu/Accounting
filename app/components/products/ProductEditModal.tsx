@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { productsClient } from '@/app/lib/apiClients';
 import { X } from 'lucide-react';
 import { ProductRecord } from '@/app/lib/productsData';
 
@@ -92,31 +93,85 @@ export default function ProductEditModal({ isOpen, product, onCancel, onSave }: 
     });
   };
 
-  const handleSave = () => {
-    onSave({
-      ...product,
+  const handleSave = async () => {
+    const updatedPayload = {
       sku: draft.sku,
       barcode: draft.barcode,
-      productName: draft.productName,
+      name: draft.productName,
       category: draft.category,
       brand: draft.brand,
       supplier: draft.supplier,
       currency: draft.currency,
-      unitCost: toNumber(draft.unitCost),
-      unitPrice: toNumber(draft.unitPrice),
-      taxRate: toNumber(draft.taxRate),
-      discountRate: toNumber(draft.discountRate),
-      stockQuantity: toNumber(draft.stockQuantity),
-      reorderLevel: toNumber(draft.reorderLevel),
-      safetyStock: toNumber(draft.safetyStock),
-      valuationMethod: draft.valuationMethod,
+      unit_cost: toNumber(draft.unitCost),
+      unit_price: toNumber(draft.unitPrice),
+      tax_rate: toNumber(draft.taxRate),
+      discount_rate: toNumber(draft.discountRate),
+      stock_quantity: toNumber(draft.stockQuantity),
+      reorder_level: toNumber(draft.reorderLevel),
+      safety_stock: toNumber(draft.safetyStock),
+      valuation_method: draft.valuationMethod,
       warehouse: draft.warehouse,
-      cogsToDate: toNumber(draft.cogsToDate),
-      revenueToDate: toNumber(draft.revenueToDate),
-      lastPurchaseDate: draft.lastPurchaseDate,
-      lastSaleDate: draft.lastSaleDate,
+      cogs_to_date: toNumber(draft.cogsToDate),
+      revenue_to_date: toNumber(draft.revenueToDate),
+      last_purchase_date: draft.lastPurchaseDate,
+      last_sale_date: draft.lastSaleDate,
       status: draft.status,
-    });
+    };
+
+    try {
+      const updated = await productsClient.update(String(product.id), updatedPayload);
+      onSave({
+        ...product,
+        sku: updated.sku ?? draft.sku,
+        barcode: updated.barcode ?? draft.barcode,
+        productName: updated.name ?? draft.productName,
+        category: updated.category ?? draft.category,
+        brand: updated.brand ?? draft.brand,
+        supplier: updated.supplier ?? draft.supplier,
+        currency: updated.currency ?? draft.currency,
+        unitCost: toNumber(String(updated.unit_cost ?? draft.unitCost)),
+        unitPrice: toNumber(String(updated.unit_price ?? draft.unitPrice)),
+        taxRate: toNumber(String(updated.tax_rate ?? draft.taxRate)),
+        discountRate: toNumber(String(updated.discount_rate ?? draft.discountRate)),
+        stockQuantity: toNumber(String(updated.stock_quantity ?? draft.stockQuantity)),
+        reorderLevel: toNumber(String(updated.reorder_level ?? draft.reorderLevel)),
+        safetyStock: toNumber(String(updated.safety_stock ?? draft.safetyStock)),
+        valuationMethod: (updated.valuation_method as any) ?? draft.valuationMethod,
+        warehouse: updated.warehouse ?? draft.warehouse,
+        cogsToDate: toNumber(String(updated.cogs_to_date ?? draft.cogsToDate)),
+        revenueToDate: toNumber(String(updated.revenue_to_date ?? draft.revenueToDate)),
+        lastPurchaseDate: updated.last_purchase_date ?? draft.lastPurchaseDate,
+        lastSaleDate: updated.last_sale_date ?? draft.lastSaleDate,
+        status: (updated.status as any) ?? draft.status,
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to update product', err);
+      onSave({
+        ...product,
+        sku: draft.sku,
+        barcode: draft.barcode,
+        productName: draft.productName,
+        category: draft.category,
+        brand: draft.brand,
+        supplier: draft.supplier,
+        currency: draft.currency,
+        unitCost: toNumber(draft.unitCost),
+        unitPrice: toNumber(draft.unitPrice),
+        taxRate: toNumber(draft.taxRate),
+        discountRate: toNumber(draft.discountRate),
+        stockQuantity: toNumber(draft.stockQuantity),
+        reorderLevel: toNumber(draft.reorderLevel),
+        safetyStock: toNumber(draft.safetyStock),
+        valuationMethod: draft.valuationMethod,
+        warehouse: draft.warehouse,
+        cogsToDate: toNumber(draft.cogsToDate),
+        revenueToDate: toNumber(draft.revenueToDate),
+        lastPurchaseDate: draft.lastPurchaseDate,
+        lastSaleDate: draft.lastSaleDate,
+        status: draft.status,
+      });
+    }
   };
 
   const inputClassName =

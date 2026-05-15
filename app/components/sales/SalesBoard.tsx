@@ -17,15 +17,15 @@ import {
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
-import { salesByBusiness, type SaleRecord } from '@/app/lib/salesData';
+import { fetchSalesByBusiness, type SaleRecord } from '@/app/lib/salesData';
 import { buildSalesColumns, buildSalesFilters } from './salesTableConfig';
 import SalesEditModal from './SalesEditModal';
 
 type BusinessOption = {
   id: string;
   name: string;
-  legalName: string;
+  legalName?: string;
+  industry?: string;
 };
 
 type SalesBoardProps = {
@@ -70,8 +70,23 @@ export default function SalesBoard({ role, routeBase, businesses, defaultBusines
   const selectedBusiness = businesses.find((business) => business.id === selectedBusinessId) ?? businesses[0];
 
   React.useEffect(() => {
-    const selectedBusinessNumericId = selectedBusiness?.id ? Number(selectedBusiness.id) : 0;
-    setSales(salesByBusiness[selectedBusinessNumericId] ?? []);
+    let mounted = true;
+    async function load() {
+      try {
+        const list = await fetchSalesByBusiness(selectedBusiness?.id ?? 0);
+        if (!mounted) return;
+        setSales(list);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load sales', err);
+        if (mounted) setSales([]);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
   }, [selectedBusiness]);
 
   const handleBusinessChange = (businessId: string) => {
@@ -92,7 +107,7 @@ export default function SalesBoard({ role, routeBase, businesses, defaultBusines
 
   const activeBusinessRecord =
     selectedBusiness && selectedBusiness.id !== 'all'
-      ? adminBusinesses.find((business) => String(business.id) === selectedBusiness.id) ?? null
+      ? businesses.find((business) => String((business as any).id) === selectedBusiness.id) ?? null
       : null;
 
   if (!selectedBusiness) {

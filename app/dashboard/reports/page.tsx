@@ -1,11 +1,13 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, Download, BadgeCheck, CalendarClock, BookText, Scale, Wallet, Building2, BookOpen } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
-import { reports as reportItems, reportButtons } from './reportData';
+import { reportButtons } from './reportData';
+import reportsClient from '@/app/lib/clients/reportsClient';
+import businessClient from '@/app/lib/clients/businessClient';
 
 type BusinessOption = {
   id: string;
@@ -13,11 +15,8 @@ type BusinessOption = {
   legalName: string;
 };
 
-const businessOptions: BusinessOption[] = [
+const defaultBusinessOptions: BusinessOption[] = [
   { id: 'all', name: 'All Businesses', legalName: 'Portfolio Overview' },
-  { id: 'acme', name: 'Acme Holdings Ltd', legalName: 'Primary Investment Company' },
-  { id: 'nexa', name: 'Nexa Retail Group Ltd', legalName: 'Retail & Distribution' },
-  { id: 'peak', name: 'Peak Foods Distributors', legalName: 'Food Wholesale Operations' },
 ];
 
 const reportBusinessMap: Record<number, string> = {
@@ -40,13 +39,47 @@ const reportBusinessMap: Record<number, string> = {
 export default function ReportsPage() {
   const [activeView, setActiveView] = useState<'all' | 'balance-sheet' | 'income-statement' | 'journal' | 'ledger' | 'cash-book'>('all');
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>('all');
+  const [reportItems, setReportItems] = useState<any[]>([]);
+  const [businessOptions, setBusinessOptions] = useState<BusinessOption[]>(defaultBusinessOptions);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const [reports, businesses] = await Promise.all([reportsClient.getAll(), businessClient.getAll()]);
+        if (!mounted) return;
+        setReportItems(reports || []);
+        const mapped = [
+          ...defaultBusinessOptions,
+          ...(businesses || []).map((b: any) => ({ id: String(b.id), name: b.businessName || b.name || `Business ${b.id}`, legalName: b.legalName || '' })),
+        ];
+        setBusinessOptions(mapped);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load reports or businesses', err);
+        if (mounted) {
+          setReportItems([]);
+          setBusinessOptions(defaultBusinessOptions);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const selectedBusiness =
     businessOptions.find((business) => business.id === selectedBusinessId) ?? businessOptions[0];
 
   const reportsWithBusiness = reportItems.map((report) => {
-    const businessId = reportBusinessMap[report.id] ?? 'acme';
-    const business = businessOptions.find((item) => item.id === businessId) ?? businessOptions[1];
+    const businessId = report.businessId ?? report.business_id ?? reportBusinessMap[report.id] ?? 'all';
+    const business = businessOptions.find((item) => String(item.id) === String(businessId)) ?? businessOptions[0];
 
     return {
       ...report,
@@ -301,6 +334,7 @@ export default function ReportsPage() {
         searchPlaceholder="Search reports..."
         pagination={true}
         itemsPerPage={10}
+        loading={loading}
       />
     </div>
   );

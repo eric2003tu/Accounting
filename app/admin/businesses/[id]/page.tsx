@@ -1,5 +1,7 @@
+"use client";
+
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -14,10 +16,9 @@ import {
   UserRound,
 } from 'lucide-react';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
-import {
-  getAdminBusinessById,
-  getAdminUserById,
-} from '@/app/admin/data/adminDirectoryData';
+import businessClient from '@/app/lib/clients/businessClient';
+import usersClient from '@/app/lib/clients/usersClient';
+import { useEffect, useState } from 'react';
 
 function money(value: number) {
   const sign = value < 0 ? '-' : '';
@@ -41,26 +42,65 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default async function AdminBusinessDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export default function AdminBusinessDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id ?? '';
   const businessId = Number(id);
-  const business = getAdminBusinessById(businessId);
 
-  if (!business) {
-    notFound();
+  const [business, setBusiness] = useState<any | null>(null);
+  const [owner, setOwner] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const b = await businessClient.getById(String(businessId));
+        if (!mounted) return;
+        setBusiness(b);
+        if (b?.owner_id) {
+          try {
+            const o = await usersClient.getById(String(b.owner_id));
+            if (!mounted) return;
+            setOwner(o);
+          } catch (e) {
+            // ignore owner fetch errors
+            // eslint-disable-next-line no-console
+            console.error('Failed to load owner', e);
+          }
+        }
+      } catch (err: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load business', err);
+        if (mounted) setError(err?.message || 'Failed to load business');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    if (businessId) load();
+    return () => {
+      mounted = false;
+    };
+  }, [businessId]);
+
+  if (!id) {
+    return <div className="text-slate-600">Invalid business id.</div>;
   }
 
-  const owner = getAdminUserById(business.ownerId);
-  if (!owner) {
-    notFound();
+  if (loading) return <div className="text-slate-600">Loading...</div>;
+
+  if (error || !business) {
+    return (
+      <div className="text-slate-600">{error || 'Business not found.'}</div>
+    );
   }
 
-  const profitMargin = ratio(business.financials.netProfit, business.financials.monthlyRevenue);
-  const currentRatio = ratio(business.financials.assets, business.financials.liabilities);
+  const profitMargin = ratio(business.financials?.netProfit || 0, business.financials?.monthlyRevenue || 0);
+  const currentRatio = ratio(business.financials?.assets || 0, business.financials?.liabilities || 0);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -112,18 +152,18 @@ export default async function AdminBusinessDetailPage({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-              <InfoRow label="Business name" value={business.businessName} />
-              <InfoRow label="Legal name" value={business.legalName} />
-              <InfoRow label="Trade name" value={business.tradeName} />
-              <InfoRow label="Tax ID" value={business.taxId} />
-              <InfoRow label="Registration no." value={business.registrationNo} />
-              <InfoRow label="Industry" value={business.industry} />
-              <InfoRow label="Country" value={business.country} />
-              <InfoRow label="City" value={business.city} />
-              <InfoRow label="Timezone" value={business.timezone} />
-              <InfoRow label="Plan" value={business.subscription} />
-              <InfoRow label="Billing cycle" value={business.billingCycle} />
-              <InfoRow label="Next billing" value={business.nextBillingDate} />
+              <InfoRow label="Business name" value={business.businessName || business.name || ''} />
+              <InfoRow label="Legal name" value={business.legal_name || business.legalName || ''} />
+              <InfoRow label="Trade name" value={business.trade_name || business.tradeName || ''} />
+              <InfoRow label="Tax ID" value={business.tax_id || business.taxId || ''} />
+              <InfoRow label="Registration no." value={business.registration_no || business.registrationNo || ''} />
+              <InfoRow label="Industry" value={business.industry || ''} />
+              <InfoRow label="Country" value={business.country || ''} />
+              <InfoRow label="City" value={business.city || ''} />
+              <InfoRow label="Timezone" value={business.timezone || ''} />
+              <InfoRow label="Plan" value={business.subscription || business.plan || ''} />
+              <InfoRow label="Billing cycle" value={business.billingCycle || business.billing_cycle || ''} />
+              <InfoRow label="Next billing" value={business.nextBillingDate || business.next_billing_date || ''} />
             </div>
           </section>
 
@@ -139,12 +179,12 @@ export default async function AdminBusinessDetailPage({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-              <InfoRow label="Full name" value={owner.name} />
-              <InfoRow label="Role" value={owner.role} />
-              <InfoRow label="Email" value={owner.email} />
-              <InfoRow label="Phone" value={owner.phone} />
-              <InfoRow label="Status" value={owner.status} />
-              <InfoRow label="MFA" value={owner.mfa} />
+              <InfoRow label="Full name" value={owner ? `${owner.first_name ?? ''} ${owner.last_name ?? ''}`.trim() || owner.name || owner.email : 'Unknown'} />
+              <InfoRow label="Role" value={owner?.roles?.[0] || owner?.role || 'Owner'} />
+              <InfoRow label="Email" value={owner?.email || ''} />
+              <InfoRow label="Phone" value={owner?.phone || ''} />
+              <InfoRow label="Status" value={owner?.is_active ? 'Active' : 'Suspended'} />
+              <InfoRow label="MFA" value={'Disabled'} />
             </div>
           </section>
         </div>
@@ -154,20 +194,20 @@ export default async function AdminBusinessDetailPage({
             <h3 className="text-base font-semibold text-slate-900">Owner quick actions</h3>
             <div className="mt-4 space-y-3">
               <Link
-                href={`/admin/users/${owner.id}`}
+                href={`/admin/users/${owner?.id ?? ''}`}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Open owner profile
               </Link>
               <a
-                href={`mailto:${owner.email}`}
+                href={`mailto:${owner?.email ?? ''}`}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 <Mail className="h-4 w-4" />
                 Email owner
               </a>
               <a
-                href={`tel:${owner.phone}`}
+                href={`tel:${owner?.phone ?? ''}`}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 <Phone className="h-4 w-4" />

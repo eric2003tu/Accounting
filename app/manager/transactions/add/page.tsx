@@ -20,7 +20,7 @@ import {
   BadgeInfo,
   Plus,
 } from 'lucide-react';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
+import { businessClient } from '@/app/lib/apiClients';
 
 const transactionKinds = [
   { value: 'income', label: 'Money received' },
@@ -61,7 +61,7 @@ const accountCategories = [
 const taxRates = [0, 5, 7.5, 10, 12.5, 15, 18, 20];
 
 const managerBusinessId = 1;
-const ownerBusinesses = adminBusinesses.filter((business) => business.id === managerBusinessId);
+const ownerBusinesses: any[] = [];
 
 type BusinessOption = {
   id: string;

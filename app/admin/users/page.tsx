@@ -1,18 +1,67 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Users, UserCheck, UserX } from 'lucide-react';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
-import { adminUsers, type AdminUser } from '@/app/admin/data/adminDirectoryData';
+import usersClient from '@/app/lib/clients/usersClient';
+import type { UserDto } from '@/app/lib/types';
 
-const initialUsers: AdminUser[] = adminUsers;
+type AdminUser = {
+  id: number | string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: string;
+  status: string;
+  mfa: string;
+  lastLogin?: string;
+  joinedAt?: string;
+  department?: string;
+};
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<AdminUser[]>(initialUsers);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const apiUsers: UserDto[] = await usersClient.getAll();
+        const mapped = apiUsers.map((u) => ({
+          id: u.id,
+          name: `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email,
+          email: u.email,
+          phone: u.phone || '',
+          role: (u.roles && u.roles[0]) || 'Owner',
+          status: u.is_active ? 'Active' : 'Suspended',
+          mfa: 'Disabled',
+          lastLogin: u.updated_at || '',
+          joinedAt: u.created_at || '',
+          department: '',
+        }));
+        if (!mounted) return;
+        setUsers(mapped);
+      } catch (err: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load users', err);
+        if (mounted) setError(err?.message || 'Failed to load users');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const active = users.filter((item) => item.status === 'Active').length;
   const suspended = users.filter((item) => item.status === 'Suspended').length;
@@ -48,87 +97,92 @@ export default function AdminUsersPage() {
         <StatCard title="Suspended" value={suspended} description="Restricted accounts" icon={UserX} />
       </div>
 
-      <DataTable
-        title="User Directory"
-        description={`${users.length} users in the admin scope`}
-        data={users}
-        fileName="admin-users"
-        columns={[
-          {
-            key: 'name',
-            label: 'Name',
-            render: (value, row) => (
-              <Link
-                href={`/admin/users/${row.id}`}
-                className="font-medium text-slate-900 transition-colors hover:text-green-700"
-              >
-                {value}
-              </Link>
-            ),
-          },
-          { key: 'email', label: 'Email' },
-          {
-            key: 'role',
-            label: 'Role',
-            render: (value) => <span className="inline-block px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-700">{value}</span>,
-          },
-          {
-            key: 'status',
-            label: 'Status',
-            render: (value) => (
-              <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${value === 'Active' ? 'bg-green-100 text-green-700' : value === 'Suspended' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-                {value}
-              </span>
-            ),
-          },
-          { key: 'mfa', label: 'MFA' },
-          { key: 'lastLogin', label: 'Last Login' },
-          {
-            key: 'id',
-            label: 'Actions',
-            render: (_, row) => (
-              <div className="flex items-center gap-2">
+      {error ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      ) : (
+        <DataTable
+          title="User Directory"
+          description={`${users.length} users in the admin scope`}
+          data={users}
+          fileName="admin-users"
+          columns={[
+            {
+              key: 'name',
+              label: 'Name',
+              render: (value, row) => (
                 <Link
                   href={`/admin/users/${row.id}`}
-                  className="inline-flex items-center rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="font-medium text-slate-900 transition-colors hover:text-green-700"
                 >
-                  View
+                  {value}
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => setUserToDelete(row)}
-                  className="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100"
-                >
-                  Delete
-                </button>
-              </div>
-            ),
-          },
-        ]}
-        filters={[
-          {
-            key: 'role',
-            label: 'Role',
-            options: [
-              { label: 'Owner', value: 'Owner' },
-              { label: 'Admin', value: 'Admin' },
-              { label: 'Accountant', value: 'Accountant' },
-              { label: 'Viewer', value: 'Viewer' },
-              { label: 'Support', value: 'Support' },
-            ],
-          },
-          {
-            key: 'status',
-            label: 'Status',
-            options: [
-              { label: 'Active', value: 'Active' },
-              { label: 'Invited', value: 'Invited' },
-              { label: 'Suspended', value: 'Suspended' },
-            ],
-          },
-        ]}
-        searchPlaceholder="Search users..."
-      />
+              ),
+            },
+            { key: 'email', label: 'Email' },
+            {
+              key: 'role',
+              label: 'Role',
+              render: (value) => <span className="inline-block px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-700">{value}</span>,
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              render: (value) => (
+                <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${value === 'Active' ? 'bg-green-100 text-green-700' : value === 'Suspended' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {value}
+                </span>
+              ),
+            },
+            { key: 'mfa', label: 'MFA' },
+            { key: 'lastLogin', label: 'Last Login' },
+            {
+              key: 'id',
+              label: 'Actions',
+              render: (_, row) => (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/admin/users/${row.id}`}
+                    className="inline-flex items-center rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    View
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setUserToDelete(row)}
+                    className="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+          filters={[
+            {
+              key: 'role',
+              label: 'Role',
+              options: [
+                { label: 'Owner', value: 'Owner' },
+                { label: 'Admin', value: 'Admin' },
+                { label: 'Accountant', value: 'Accountant' },
+                { label: 'Viewer', value: 'Viewer' },
+                { label: 'Support', value: 'Support' },
+              ],
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              options: [
+                { label: 'Active', value: 'Active' },
+                { label: 'Invited', value: 'Invited' },
+                { label: 'Suspended', value: 'Suspended' },
+              ],
+            },
+          ]}
+          searchPlaceholder="Search users..."
+          loading={loading}
+        />
+      )}
 
       <DeleteConfirmationModal
         isOpen={!!userToDelete}

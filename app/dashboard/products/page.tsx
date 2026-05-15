@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Building2, Boxes, Package, AlertTriangle, TrendingUp, DollarSign, Plus } from 'lucide-react';
@@ -9,12 +9,12 @@ import DataTable from '@/app/components/dashboard/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
 import ProductEditModal from '@/app/components/products/ProductEditModal';
 import { buildProductColumns, buildProductFilters } from '@/app/components/products/productTableConfig';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
-import { productsByBusiness, ProductRecord } from '@/app/lib/productsData';
+import { businessClient, productsClient } from '@/app/lib/apiClients';
+import { fetchProductsByBusiness, ProductRecord } from '@/app/lib/productsData';
 
 const currentOwnerId = 5;
 
-const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
+// ownerBusinesses will be loaded at runtime
 
 function money(value: number) {
   return `$${value.toFixed(2)}`;
@@ -28,26 +28,68 @@ function ProductsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialBusinessId = Number(searchParams.get('businessId'));
+  const [ownerBusinesses, setOwnerBusinesses] = useState<any[]>([]);
   const defaultBusinessId = ownerBusinesses[0]?.id ?? 0;
 
-  const [selectedBusinessId, setSelectedBusinessId] = React.useState(
-    ownerBusinesses.some((business) => business.id === initialBusinessId) ? initialBusinessId : defaultBusinessId
-  );
+  const [selectedBusinessId, setSelectedBusinessId] = React.useState(defaultBusinessId);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await businessClient.getOwned();
+        if (!mounted) return;
+        setOwnerBusinesses(list || []);
+        // if query param provided and valid, set it
+        const qid = Number(searchParams.get('businessId'));
+        if (list && list.some((b: any) => b.id === qid)) {
+          setSelectedBusinessId(qid);
+        } else if (list && list.length > 0) {
+          setSelectedBusinessId(list[0].id);
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load businesses', err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [searchParams]);
 
   React.useEffect(() => {
     const queryBusinessId = Number(searchParams.get('businessId'));
     if (ownerBusinesses.some((business) => business.id === queryBusinessId) && queryBusinessId !== selectedBusinessId) {
       setSelectedBusinessId(queryBusinessId);
     }
-  }, [searchParams, selectedBusinessId]);
+  }, [searchParams, selectedBusinessId, ownerBusinesses]);
 
-  const selectedBusiness = ownerBusinesses.find((business) => business.id === selectedBusinessId) ?? ownerBusinesses[0];
+  const selectedBusiness = ownerBusinesses.find((business) => business.id === selectedBusinessId) ?? ownerBusinesses[0] ?? { id: 0, businessName: 'N/A', legalName: '', industry: '' };
   const [products, setProducts] = React.useState<ProductRecord[]>([]);
   const [productToDelete, setProductToDelete] = React.useState<ProductRecord | null>(null);
   const [productToEdit, setProductToEdit] = React.useState<ProductRecord | null>(null);
 
   React.useEffect(() => {
-    setProducts(productsByBusiness[selectedBusiness?.id ?? defaultBusinessId] ?? []);
+    let mounted = true;
+    async function load() {
+      try {
+        const list = await fetchProductsByBusiness(selectedBusiness?.id ?? defaultBusinessId);
+        if (!mounted) return;
+        setProducts(list);
+      } catch (err) {
+        // surface error to console and show empty list
+        // UI can show messaging elsewhere if desired
+        // eslint-disable-next-line no-console
+        console.error('Failed to load products', err);
+        if (mounted) setProducts([]);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
   }, [selectedBusiness, defaultBusinessId]);
 
   if (!selectedBusiness) {
@@ -77,8 +119,17 @@ function ProductsPageContent() {
       return;
     }
 
-    setProducts((currentProducts) => currentProducts.filter((product) => product.id !== productToDelete.id));
-    setProductToDelete(null);
+    (async () => {
+      try {
+        await productsClient.delete(String(productToDelete.id));
+        setProducts((currentProducts) => currentProducts.filter((product) => product.id !== productToDelete.id));
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to delete product', err);
+      } finally {
+        setProductToDelete(null);
+      }
+    })();
   };
 
   const handleSaveProduct = (updatedProduct: ProductRecord) => {
@@ -111,11 +162,11 @@ function ProductsPageContent() {
               onChange={(event) => handleBusinessChange(Number(event.target.value))}
               className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
             >
-              {ownerBusinesses.map((business) => (
-                <option key={business.id} value={business.id}>
-                  {business.businessName}
-                </option>
-              ))}
+                    {ownerBusinesses.map((business) => (
+                      <option key={business.id} value={business.id}>
+                        {business.name ?? business.businessName}
+                      </option>
+                    ))}
             </select>
             <p className="mt-2 text-sm text-slate-600">
               {selectedBusiness.legalName} · {selectedBusiness.industry}

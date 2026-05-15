@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { productsClient } from '@/app/lib/apiClients';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -109,7 +110,7 @@ export default function ProductCreateForm({
     };
   }, [stockQuantity, unitCost, unitPrice, cogsToDate, revenueToDate]);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const payload = {
@@ -141,9 +142,13 @@ export default function ProductCreateForm({
       imageCount: productImages.length,
       metrics,
     };
-
-    console.log(payload);
-    router.push(`${submitHrefBase}?businessId=${businessId}`);
+    try {
+      await productsClient.create(payload);
+      router.push(`${submitHrefBase}?businessId=${businessId}`);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to create product', err);
+    }
   };
 
   const money = (value: number) => `$${value.toFixed(2)}`;

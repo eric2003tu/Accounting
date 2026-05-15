@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, Download, BadgeCheck, CalendarClock, BookText, Scale, Wallet, Building2, BookOpen } from 'lucide-react';
 import StatCard from '@/app/components/manager/StatCard';
 import DataTable from '@/app/components/manager/DataTable';
-import { reports as reportItems, reportButtons } from './reportData';
+import { reportButtons } from './reportData';
+import reportsClient from '@/app/lib/clients/reportsClient';
 
 const managerBusiness = {
   id: 'acme',
@@ -32,11 +33,39 @@ const reportBusinessMap: Record<number, string> = {
 
 export default function ManagerReportsPage() {
   const [activeView, setActiveView] = useState<'all' | 'balance-sheet' | 'income-statement' | 'journal' | 'ledger' | 'cash-book'>('all');
+  const [reportItems, setReportItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const scopedReports = useMemo(
-    () => reportItems.filter((report) => (reportBusinessMap[report.id] ?? 'acme') === managerBusiness.id),
-    []
-  );
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const items = await reportsClient.getAll(String(managerBusiness.id));
+        if (!mounted) return;
+        setReportItems(items || []);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load manager reports', err);
+        if (mounted) setReportItems([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const scopedReports = useMemo(() => {
+    return reportItems.filter((report) => {
+      // try to match by business id or fallback map for legacy seeded ids
+      if (String(report.businessId) === String(managerBusiness.id) || String(report.business_id) === String(managerBusiness.id)) return true;
+      return (reportBusinessMap[report.id] ?? 'acme') === managerBusiness.id;
+    });
+  }, [reportItems]);
 
   const readyReports = scopedReports.filter((report) => report.status === 'Ready').length;
   const processingReports = scopedReports.filter((report) => report.status === 'Processing').length;
@@ -205,6 +234,7 @@ export default function ManagerReportsPage() {
           },
         ]}
         searchPlaceholder="Search reports..."
+        loading={loading}
         itemsPerPage={10}
       />
     </div>

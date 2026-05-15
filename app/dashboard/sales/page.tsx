@@ -1,26 +1,46 @@
-import React, { Suspense } from 'react';
+"use client";
+import React, { useEffect, useState } from 'react';
 import SalesBoard from '@/app/components/sales/SalesBoard';
-import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
+import { businessClient } from '@/app/lib/apiClients';
 
 const currentOwnerId = 5;
 
-const ownerBusinesses = adminBusinesses.filter((business) => business.ownerId === currentOwnerId);
-
 export default function SalesPage() {
-  const businessOptions = ownerBusinesses.map((business) => ({
-    id: String(business.id),
-    name: business.businessName,
-    legalName: business.legalName,
-  }));
+  const [businessOptions, setBusinessOptions] = useState<{ id: string; name: string; legalName?: string; industry?: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const list = await businessClient.getOwned();
+        if (!mounted) return;
+        const opts = (list || []).map((business: any) => ({
+          id: String(business.id),
+          name: business.businessName,
+          legalName: business.legalName,
+          industry: business.industry,
+        }));
+        setBusinessOptions(opts.filter((b) => b));
+      } catch (err) {
+        console.error('Failed to load businesses for sales page', err);
+        if (mounted) setBusinessOptions([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  if (loading) return <div className="text-slate-600">Loading sales...</div>;
 
   return (
-    <Suspense fallback={<div className="text-slate-600">Loading sales...</div>}>
-      <SalesBoard
-        role="owner"
-        routeBase="/dashboard/sales"
-        businesses={businessOptions}
-        defaultBusinessId={businessOptions[0]?.id ?? ''}
-      />
-    </Suspense>
+    <SalesBoard
+      role="owner"
+      routeBase="/dashboard/sales"
+      businesses={businessOptions}
+      defaultBusinessId={businessOptions[0]?.id ?? ''}
+    />
   );
 }
