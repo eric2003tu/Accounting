@@ -142,6 +142,157 @@ const iconMap: Record<string, LucideIcon> = {
   'Trial Balance': CalendarClock,
 };
 
+const apiTypeMap: Record<string, string> = {
+  BALANCE_SHEET: 'Balance Sheet',
+  INCOME_STATEMENT: 'Income Statement',
+  JOURNAL: 'Journal',
+  LEDGER: 'Ledger',
+  CASHBOOK: 'Cash Book',
+  CASH_BOOK: 'Cash Book',
+  TRIAL_BALANCE: 'Trial Balance',
+};
+
+function normalizeReportType(type?: string) {
+  if (!type) return '';
+  return apiTypeMap[type] || type;
+}
+
+function parseReportData(report: any) {
+  const rawData = report?.data;
+  if (!rawData) return null;
+
+  if (typeof rawData === 'object') return rawData;
+
+  if (typeof rawData === 'string') {
+    try {
+      return JSON.parse(rawData);
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+function formatReportDate(value?: string) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function formatDisplayPeriod(report: any, parsedData: any) {
+  if (report?.period) return report.period;
+
+  const start = parsedData?.period_start || parsedData?.periodStart;
+  const end = parsedData?.period_end || parsedData?.periodEnd;
+  if (start || end) {
+    return `${formatReportDate(start)}${start && end ? ' - ' : ''}${formatReportDate(end)}`.trim();
+  }
+
+  if (parsedData?.as_of) return formatReportDate(parsedData.as_of);
+  return '';
+}
+
+function getDisplaySummary(report: any, parsedData: any) {
+  return report?.summary || parsedData?.summary || '';
+}
+
+function getDisplayGeneratedAt(report: any, parsedData: any) {
+  return report?.generatedAt || report?.generated_at || parsedData?.generated_at || parsedData?.generatedAt || '';
+}
+
+function getSummaryStats(report: any, parsedData: any) {
+  if (Array.isArray(report?.summaryStats)) return report.summaryStats;
+
+  const type = normalizeReportType(report?.type);
+  if (type === 'Balance Sheet') {
+    const sheet = parsedData?.balance_sheet || parsedData || {};
+    return [
+      { label: 'Assets', value: String(sheet.total_assets ?? sheet.totalAssets ?? 0), description: 'Total assets in the statement' },
+      { label: 'Liabilities', value: String(sheet.total_liabilities ?? sheet.totalLiabilities ?? 0), description: 'Total liabilities in the statement' },
+      { label: 'Equity', value: String(sheet.total_equity ?? sheet.totalEquity ?? 0), description: 'Total equity in the statement' },
+    ];
+  }
+
+  if (type === 'Income Statement') {
+    return [
+      { label: 'Revenue', value: String(parsedData?.total_income ?? parsedData?.totalIncome ?? 0), description: 'Total income for the period' },
+      { label: 'Expenses', value: String(parsedData?.total_expenses ?? parsedData?.totalExpenses ?? 0), description: 'Total expenses for the period' },
+      { label: 'Net Profit', value: String(parsedData?.net_income ?? parsedData?.netIncome ?? 0), description: 'Income less expenses' },
+    ];
+  }
+
+  if (type === 'Trial Balance') {
+    return [
+      { label: 'Debit Total', value: String(parsedData?.totals?.debit ?? 0), description: 'Sum of debit balances' },
+      { label: 'Credit Total', value: String(parsedData?.totals?.credit ?? 0), description: 'Sum of credit balances' },
+      { label: 'Difference', value: String(parsedData?.totals?.difference ?? 0), description: 'Should be zero when balanced' },
+    ];
+  }
+
+  if (type === 'Cash Book') {
+    return [
+      { label: 'Opening Balance', value: String(parsedData?.openingBalance ?? parsedData?.opening_balance ?? 0), description: 'Balance brought forward' },
+      { label: 'Receipts', value: String(parsedData?.receipts?.length ?? 0), description: 'Incoming cash entries' },
+      { label: 'Payments', value: String(parsedData?.payments?.length ?? parsedData?.entries?.length ?? 0), description: 'Outgoing cash entries' },
+    ];
+  }
+
+  return [];
+}
+
+function getGenericIcon(type?: string) {
+  return iconMap[normalizeReportType(type)] || FileText;
+}
+
+function ApiFallbackView({ report, businessName, parsedData }: { report: any; businessName: string; parsedData: any }) {
+  const payload = parsedData || {};
+  const entries = Object.entries(payload)
+    .filter(([key]) => !['business_id', 'business_name', 'businessName'].includes(key))
+    .slice(0, 8);
+
+  return (
+    <section className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+      <p className="mb-3 text-sm font-semibold text-slate-700">Business: {businessName || payload.business_name || payload.businessName || 'N/A'}</p>
+      <div className="border-b border-slate-200 pb-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-700">API Report Payload</p>
+        <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">{report.name || normalizeReportType(report.type) || 'Report'}</h2>
+            <p className="mt-1 text-sm text-slate-500">{getDisplaySummary(report, parsedData) || 'Detailed report payload returned by the API.'}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-right shadow-sm">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Type</p>
+            <p className="text-sm font-semibold text-slate-900">{normalizeReportType(report.type) || report.type || 'Report'}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {entries.map(([key, value]) => (
+          <div key={key} className="rounded-2xl border border-slate-200 bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{key.replaceAll('_', ' ')}</p>
+            <p className="mt-2 text-sm font-medium text-slate-900">{Array.isArray(value) ? `${value.length} item(s)` : typeof value === 'object' ? 'Structured object' : String(value)}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+          <p className="text-sm font-semibold text-slate-900">Raw JSON</p>
+          <p className="text-xs text-slate-500">Rendered when the report does not match a seeded template.</p>
+        </div>
+        <pre className="max-h-[720px] overflow-auto p-5 text-xs leading-6 text-slate-700">{JSON.stringify(payload, null, 2)}</pre>
+      </div>
+    </section>
+  );
+}
+
 const reportTemplates: Record<number, ReportTemplate> = {
   1: {
     kind: 'Balance Sheet',
@@ -1023,15 +1174,27 @@ function getTemplate(report: ReportDefinition): ReportTemplate {
 }
 
 function buildCsv(report: ReportDefinition): CsvTable {
-  if (report.type === 'Ledger') {
+  const parsedData = parseReportData(report);
+  const normalizedType = normalizeReportType(report.type);
+
+  if (normalizedType === 'Ledger') {
     return {
-      fileName: `${report.slug}-ledger.csv`,
+      fileName: `${report.slug || String(report.id)}-ledger.csv`,
       headers: ['Date', 'Reference', 'Description', 'Debit', 'Credit', 'Balance'],
       rows: report.rows.map((row) => [row.date, row.reference, row.description, row.debit || '', row.credit || '', row.balance || '']),
     };
   }
 
   const template = getTemplate(report);
+
+  if (!template) {
+    const payload = parsedData || {};
+    return {
+      fileName: `${report.slug || String(report.id)}-report.csv`,
+      headers: ['Field', 'Value'],
+      rows: Object.entries(payload).map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)]),
+    };
+  }
 
   switch (template.kind) {
     case 'Balance Sheet':
@@ -1095,11 +1258,18 @@ function buildCsv(report: ReportDefinition): CsvTable {
 }
 
 function TemplateRenderer({ report, businessName }: { report: ReportDefinition; businessName: string }) {
-  if (report.type === 'Ledger') {
+  const parsedData = parseReportData(report);
+  const normalizedType = normalizeReportType(report.type);
+
+  if (normalizedType === 'Ledger' && report.rows) {
     return <LedgerView report={report} businessName={businessName} />;
   }
 
   const template = getTemplate(report);
+
+  if (!template) {
+    return <ApiFallbackView report={report} businessName={businessName} parsedData={parsedData} />;
+  }
 
   switch (template.kind) {
     case 'Balance Sheet':
@@ -1116,8 +1286,15 @@ function TemplateRenderer({ report, businessName }: { report: ReportDefinition; 
 }
 
 export default function ReportDetailView({ report, businessName }: ReportDetailViewProps) {
-  const Icon = iconMap[report.type];
-  const readyForDownload = report.status === 'Ready';
+  const parsedData = parseReportData(report);
+  const normalizedType = normalizeReportType(report.type);
+  const Icon = getGenericIcon(report.type);
+  const readyForDownload = report.status === 'Ready' || report.status === 'GENERATED';
+  const summaryStats = getSummaryStats(report, parsedData);
+  const displayPeriod = formatDisplayPeriod(report, parsedData);
+  const displayGeneratedAt = getDisplayGeneratedAt(report, parsedData);
+  const displaySummary = getDisplaySummary(report, parsedData);
+  const displayName = report.name || normalizedType || 'Report';
 
   const handlePrint = () => {
     window.print();
@@ -1143,8 +1320,8 @@ export default function ReportDetailView({ report, businessName }: ReportDetailV
               <Icon className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{report.name}</h1>
-              <p className="mt-1 text-sm text-slate-600 sm:text-base">{report.summary}</p>
+              <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{displayName}</h1>
+              <p className="mt-1 text-sm text-slate-600 sm:text-base">{displaySummary}</p>
             </div>
           </div>
         </div>
@@ -1154,16 +1331,16 @@ export default function ReportDetailView({ report, businessName }: ReportDetailV
             {report.status}
           </span>
           <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-            {report.period}
+            {displayPeriod}
           </span>
           <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-            Generated {report.generatedAt}
+            Generated {displayGeneratedAt}
           </span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 no-print">
-        <ReportSummaryStats stats={report.summaryStats} />
+        <ReportSummaryStats stats={summaryStats} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">

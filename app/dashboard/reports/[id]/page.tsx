@@ -1,28 +1,75 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import ReportDetailView from '@/app/components/dashboard/ReportDetailView';
 import { reportsClient, businessClient } from '@/app/lib/apiClients';
 
-export default async function ReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const reportId = Number(id);
+export default function ReportDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id;
+  const reportId = Array.isArray(id) ? id[0] : id;
 
-  // Fetch reports and find the requested report
-  const reports = await reportsClient.getAll();
-  const report = (reports || []).find((r: any) => Number(r.id) === reportId) || null;
+  const [report, setReport] = useState<any | null>(null);
+  const [businessName, setBusinessName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!report) {
-    notFound();
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      if (!reportId) {
+        router.push('/dashboard/reports');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const foundReport = await reportsClient.getById(reportId);
+        if (!foundReport) {
+          setReport(null);
+          setError('Report not found.');
+          return;
+        }
+
+        setReport(foundReport);
+
+        if (foundReport.business_id) {
+          try {
+            const business = await businessClient.getById(String(foundReport.business_id));
+            if (!mounted) return;
+            setBusinessName(business?.businessName ?? business?.business_name ?? '');
+          } catch (businessError) {
+            // Keep the report view even if the business label cannot be resolved.
+            console.error('Failed to resolve business for report', businessError);
+          }
+        } else {
+          setBusinessName('');
+        }
+      } catch (fetchError: any) {
+        console.error('Failed to load report detail', fetchError);
+        if (mounted) setError(fetchError?.message || 'Failed to load report.');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [reportId, router]);
+
+  if (loading) {
+    return <div className="text-slate-600">Loading report...</div>;
   }
 
-  let businessName = '';
-  try {
-    if (report.business_id) {
-      const b = await businessClient.getById(String(report.business_id));
-      businessName = b?.businessName ?? b?.business_name ?? '';
-    }
-  } catch (e) {
-    // ignore business name resolution failure, keep template
-    console.error('Failed to resolve business for report', e);
+  if (error || !report) {
+    return <div className="text-slate-600">{error || 'Report not found.'}</div>;
   }
 
   return <ReportDetailView report={report as any} businessName={businessName} />;
