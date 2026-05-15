@@ -30,7 +30,7 @@ export type ReportDefinition = {
   slug: string;
   name: string;
   type: ReportType;
-  status: 'Ready' | 'Processing';
+  status: 'Ready' | 'Processing' | 'GENERATED';
   period: string;
   generatedAt: string;
   summary: string;
