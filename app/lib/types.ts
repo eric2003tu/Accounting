@@ -242,11 +242,13 @@ export interface StockMovementDto {
   created_at?: string | null;
 }
 
+export type BusinessUserRole = 'OWNER' | 'MANAGER' | 'ACCOUNTANT' | 'STAFF' | string;
+
 export interface BusinessUserDto {
   id: string | number;
-  business_id?: string | number | null;
-  user_id?: string | number | null;
-  role?: string | null;
+  business_id: string | number;
+  user_id: string | number;
+  role: BusinessUserRole;
 }
 
 export interface AuthTokenDto {
