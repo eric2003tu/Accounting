@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import PurchasesBoard from '@/app/components/purchases/PurchasesBoard';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import { adminBusinesses } from '@/app/admin/data/adminDirectoryData';
 
 const managerBusinessId = 1;

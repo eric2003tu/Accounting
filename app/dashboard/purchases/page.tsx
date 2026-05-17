@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import PurchasesBoard from '@/app/components/purchases/PurchasesBoard';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import { businessClient } from '@/app/lib/apiClients';
 
 export default function PurchasesPage() {

@@ -2,6 +2,7 @@
 
 import React, { Suspense } from 'react';
 import SalesBoard from '@/app/components/sales/SalesBoard';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import { businessClient } from '@/app/lib/apiClients';
 
 const managerBusinessId = 1;
