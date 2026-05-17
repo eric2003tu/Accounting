@@ -92,6 +92,8 @@ export interface UserDto {
   email: string;
   first_name?: string | null;
   last_name?: string | null;
+  system_role?: string | null;
+  systemRole?: string | null;
   phone?: string | null;
   avatar?: string | null;
   roles?: string[] | null;
@@ -251,6 +253,7 @@ export interface AuthTokenDto {
   access_token: string;
   token_type?: string;
   expires_in?: number;
+  user?: UserDto | null;
 }
 
 export type GenericListResponse<T> = {

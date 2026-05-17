@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import authClient from '@/app/lib/clients/authClient';
+import { getHomeRouteForRole } from '@/app/lib/clients/appClient';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,9 +22,9 @@ export default function LoginPage() {
     setIsSubmitting(true);
     authClient
       .login({ email: email.trim().toLowerCase(), password })
-      .then(() => {
-        // token stored by authClient; redirect to dashboard
-        router.push('/dashboard');
+      .then((res) => {
+        const role = res?.user?.system_role || res?.user?.systemRole || null;
+        router.push(getHomeRouteForRole(role));
       })
       .catch((err) => {
         // eslint-disable-next-line no-console
@@ -47,16 +48,13 @@ export default function LoginPage() {
             </p>
 
             <div className="mt-6 rounded-xl border border-green-200 bg-green-50/60 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-green-800">Mock Credentials</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-green-800">Test Credentials</p>
               <div className="mt-3 space-y-2 text-sm text-slate-700">
                 <p>
-                  <span className="font-semibold text-slate-900">System Admin:</span> admin@accounting.app / Admin@123
+                  <span className="font-semibold text-slate-900">Business Owner:</span> eric.tuyishime@accplan.com / User@12345
                 </p>
                 <p>
-                  <span className="font-semibold text-slate-900">Business Owner:</span> owner@accounting.app / Owner@123
-                </p>
-                <p>
-                  <span className="font-semibold text-slate-900">Business Manager:</span> manager@accounting.app / Manager@123
+                  <span className="font-semibold text-slate-900">Business Manager:</span> jean.claude@accplan.com / User@12345
                 </p>
               </div>
             </div>

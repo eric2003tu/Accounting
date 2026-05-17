@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import authClient from '@/app/lib/clients/authClient';
+import { getHomeRouteForRole } from '@/app/lib/clients/appClient';
 
 export default function GetStartedPage() {
   const router = useRouter();
@@ -32,8 +33,9 @@ export default function GetStartedPage() {
     authClient
       .register(payload)
       .then(() => authClient.login({ email: payload.email, password }))
-      .then(() => {
-        router.push('/dashboard');
+      .then((res) => {
+        const role = res?.user?.system_role || res?.user?.systemRole || null;
+        router.push(getHomeRouteForRole(role));
       })
       .catch((err) => {
         // eslint-disable-next-line no-console
