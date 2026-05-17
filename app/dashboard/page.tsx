@@ -16,7 +16,6 @@ import StatCard from '@/app/components/dashboard/StatCard';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
 import TransactionCard from '@/app/components/dashboard/TransactionCard';
 import SummaryCard from '@/app/components/dashboard/SummaryCard';
-import QuickActionButton from '@/app/components/dashboard/QuickActionButton';
 import { businessClient } from '@/app/lib/apiClients';
 
 type BusinessOption = {
@@ -150,6 +149,74 @@ function percent(numerator: number, denominator: number) {
   return `${Math.round((numerator / denominator) * 100)}%`;
 }
 
+function toNumber(value: unknown) {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value.replace(/[^0-9.-]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+function latestTrendChange(series: Array<{ value: number }>) {
+  if (series.length < 2) return 0;
+  const first = series[0]?.value || 0;
+  const last = series[series.length - 1]?.value || 0;
+  if (!first) return last > 0 ? 100 : 0;
+  return Math.round(((last - first) / first) * 100);
+}
+
+function defaultSeries(labels: string[]) {
+  return labels.map((label) => ({ label, value: 0 }));
+}
+
+function aggregateSeries(businesses: any[], seriesKey: 'revenueTrend' | 'cashFlowTrend') {
+  const seriesMap = new Map<string, number>();
+
+  businesses.forEach((business) => {
+    (business.financials?.[seriesKey] || []).forEach((point: any) => {
+      const label = String(point?.label || '');
+      if (!label) return;
+      seriesMap.set(label, (seriesMap.get(label) || 0) + toNumber(point?.value));
+    });
+  });
+
+  const entries = Array.from(seriesMap.entries()).map(([label, value]) => ({ label, value }));
+  entries.sort((left, right) => left.label.localeCompare(right.label, undefined, { numeric: true }));
+  return entries.length ? entries : defaultSeries(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']);
+}
+
+function aggregateExpenseBreakdown(businesses: any[]) {
+  const totals = new Map<string, number>();
+
+  businesses.forEach((business) => {
+    (business.financials?.expenseBreakdown || []).forEach((point: any) => {
+      const label = String(point?.label || 'Other');
+      totals.set(label, (totals.get(label) || 0) + toNumber(point?.value));
+    });
+  });
+
+  const entries = Array.from(totals.entries()).map(([label, value]) => ({ label, value }));
+  entries.sort((left, right) => right.value - left.value);
+  return entries.length ? entries : [
+    { label: 'Salaries', value: 0 },
+    { label: 'Utilities', value: 0 },
+    { label: 'Rent', value: 0 },
+    { label: 'Marketing', value: 0 },
+    { label: 'Other', value: 0 },
+  ];
+}
+
+function buildCashFlowSeries(revenueSeries: Array<{ label: string; value: number }>, expenses: number) {
+  if (!revenueSeries.length) return defaultSeries(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']);
+
+  const monthlyExpenseShare = revenueSeries.length ? expenses / revenueSeries.length : 0;
+  return revenueSeries.map((point) => ({
+    label: point.label,
+    value: Math.max(0, Math.round(point.value - monthlyExpenseShare)),
+  }));
+}
+
 export default function DashboardPage() {
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>('all');
   const [businessOptionsState, setBusinessOptionsState] = useState<BusinessOption[]>([{ id: 'all', name: 'All Businesses', legalName: 'Portfolio Overview' }]);
@@ -182,26 +249,34 @@ export default function DashboardPage() {
 
   const portfolioStats = ownerBusinessesState.reduce(
     (totals, business) => {
-      totals.income += business.financials?.monthlyRevenue || 0;
-      totals.expenses += business.financials?.monthlyExpenses || 0;
-      totals.balance += business.financials?.cashBalance || 0;
-      totals.pending += business.financials?.overdueInvoices || 0;
+      totals.income += toNumber(business.financials?.monthlyRevenue);
+      totals.expenses += toNumber(business.financials?.monthlyExpenses);
+      totals.balance += toNumber(business.financials?.cashBalance);
+      totals.pending += toNumber(business.financials?.overdueInvoices);
       return totals;
     },
     { income: 0, expenses: 0, balance: 0, pending: 0 }
   );
 
+  const portfolioRevenueTrend = aggregateSeries(ownerBusinessesState, 'revenueTrend');
+  const portfolioExpenseBreakdown = aggregateExpenseBreakdown(ownerBusinessesState);
+
   const businessStats = selectedBusinessRecord
     ? {
-        income: selectedBusinessRecord.financials.monthlyRevenue,
-        expenses: selectedBusinessRecord.financials.monthlyExpenses,
-        balance: selectedBusinessRecord.financials.cashBalance,
-        pending: selectedBusinessRecord.financials.overdueInvoices,
-        profit: selectedBusinessRecord.financials.netProfit,
-        profitMargin: percent(selectedBusinessRecord.financials.netProfit, selectedBusinessRecord.financials.monthlyRevenue),
-        revenueTrend: selectedBusinessRecord.financials.revenueTrend,
-        cashFlowTrend: selectedBusinessRecord.financials.revenueTrend.map((item: any) => ({ label: item.label, value: Math.round(item.value * 0.62) })),
-        expenseBreakdown: selectedBusinessRecord.financials.expenseBreakdown,
+        income: toNumber(selectedBusinessRecord.financials?.monthlyRevenue),
+        expenses: toNumber(selectedBusinessRecord.financials?.monthlyExpenses),
+        balance: toNumber(selectedBusinessRecord.financials?.cashBalance),
+        pending: toNumber(selectedBusinessRecord.financials?.overdueInvoices),
+        profit: toNumber(selectedBusinessRecord.financials?.netProfit),
+        profitMargin: percent(toNumber(selectedBusinessRecord.financials?.netProfit), toNumber(selectedBusinessRecord.financials?.monthlyRevenue)),
+        revenueTrend: selectedBusinessRecord.financials?.revenueTrend?.length ? selectedBusinessRecord.financials.revenueTrend : portfolioRevenueTrend,
+        cashFlowTrend: selectedBusinessRecord.financials?.cashFlowTrend?.length
+          ? selectedBusinessRecord.financials.cashFlowTrend
+          : buildCashFlowSeries(
+              selectedBusinessRecord.financials?.revenueTrend?.length ? selectedBusinessRecord.financials.revenueTrend : portfolioRevenueTrend,
+              toNumber(selectedBusinessRecord.financials?.monthlyExpenses)
+            ),
+        expenseBreakdown: selectedBusinessRecord.financials?.expenseBreakdown?.length ? selectedBusinessRecord.financials.expenseBreakdown : portfolioExpenseBreakdown,
       }
     : {
         income: portfolioStats.income,
@@ -210,30 +285,13 @@ export default function DashboardPage() {
         pending: portfolioStats.pending,
         profit: portfolioStats.income - portfolioStats.expenses,
         profitMargin: percent(portfolioStats.income - portfolioStats.expenses, portfolioStats.income),
-        revenueTrend: [
-          { label: 'Jan', value: 24800 },
-          { label: 'Feb', value: 27600 },
-          { label: 'Mar', value: 26400 },
-          { label: 'Apr', value: 31000 },
-          { label: 'May', value: 28900 },
-          { label: 'Jun', value: 34700 },
-        ],
-        cashFlowTrend: [
-          { label: 'Jan', value: 16700 },
-          { label: 'Feb', value: 18200 },
-          { label: 'Mar', value: 17400 },
-          { label: 'Apr', value: 21100 },
-          { label: 'May', value: 19400 },
-          { label: 'Jun', value: 23800 },
-        ],
-        expenseBreakdown: [
-          { label: 'Salaries', value: 35000 },
-          { label: 'Utilities', value: 5200 },
-          { label: 'Rent', value: 7300 },
-          { label: 'Marketing', value: 6300 },
-          { label: 'Other', value: 4200 },
-        ],
+        revenueTrend: portfolioRevenueTrend,
+        cashFlowTrend: buildCashFlowSeries(portfolioRevenueTrend, portfolioStats.expenses),
+        expenseBreakdown: portfolioExpenseBreakdown,
       };
+
+  const incomeTrend = latestTrendChange(businessStats.revenueTrend);
+  const expenseTrend = latestTrendChange(businessStats.cashFlowTrend);
 
   const recentTransactions = recentTransactionsByBusiness[selectedBusinessId] ?? recentTransactionsByBusiness.all;
 
@@ -294,14 +352,14 @@ export default function DashboardPage() {
             value={money(businessStats.income)}
             description={selectedBusinessId === 'all' ? 'This month across portfolio' : 'This month for selected business'}
             icon={TrendingUp}
-            trend={{ value: 12, isPositive: true }}
+            trend={{ value: Math.abs(incomeTrend), isPositive: incomeTrend >= 0 }}
           />
           <StatCard
             title="Total Expenses"
             value={money(businessStats.expenses)}
             description={selectedBusinessId === 'all' ? 'This month across portfolio' : 'This month for selected business'}
             icon={DollarSign}
-            trend={{ value: 5, isPositive: false }}
+            trend={{ value: Math.abs(expenseTrend), isPositive: expenseTrend >= 0 }}
           />
           <StatCard
             title="Account Balance"
