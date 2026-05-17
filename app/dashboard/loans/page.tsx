@@ -16,6 +16,7 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
@@ -937,7 +938,7 @@ function LoansPageContent() {
 
 export default function DashboardLoansPage() {
   return (
-    <Suspense fallback={<div className="text-sm text-slate-500">Loading loans...</div>}>
+    <Suspense fallback={<BrandLoadingScreen title="Loading loans" subtitle="Preparing loan accounts and repayment schedules." />}>
       <LoansPageContent />
     </Suspense>
   );

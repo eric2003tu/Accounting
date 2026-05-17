@@ -20,8 +20,6 @@ import SummaryCard from '@/app/components/manager/SummaryCard';
 import QuickActionButton from '@/app/components/manager/QuickActionButton';
 import { businessClient } from '@/app/lib/apiClients';
 
-const managerBusinessId = 1;
-
 const recentTransactions = [
   {
     icon: ArrowUpRight,
@@ -76,10 +74,9 @@ export default function ManagerDashboardPage() {
     let mounted = true;
     (async () => {
       try {
-        const list = await businessClient.getOwned();
+        const list = await businessClient.getManaged();
         if (!mounted) return;
-        const found = (list || []).find((b: any) => Number(b.id) === managerBusinessId) ?? null;
-        setManagerBusiness(found);
+        setManagerBusiness((list || [])[0] ?? null);
       } catch (err) {
         console.error('Failed to load manager business', err);
         if (mounted) setManagerBusiness(null);
@@ -97,18 +94,18 @@ export default function ManagerDashboardPage() {
   }
 
   const stats = {
-    income: managerBusiness.financials.monthlyRevenue,
-    expenses: managerBusiness.financials.monthlyExpenses,
-    balance: managerBusiness.financials.cashBalance,
-    pending: managerBusiness.financials.overdueInvoices,
-    profit: managerBusiness.financials.netProfit,
-    profitMargin: percent(managerBusiness.financials.netProfit, managerBusiness.financials.monthlyRevenue),
-    revenueTrend: managerBusiness.financials.revenueTrend,
-    cashFlowTrend: managerBusiness.financials.revenueTrend.map((item: any) => ({
+    income: managerBusiness.financials?.monthlyRevenue ?? 0,
+    expenses: managerBusiness.financials?.monthlyExpenses ?? 0,
+    balance: managerBusiness.financials?.cashBalance ?? 0,
+    pending: managerBusiness.financials?.overdueInvoices ?? 0,
+    profit: managerBusiness.financials?.netProfit ?? 0,
+    profitMargin: percent(managerBusiness.financials?.netProfit ?? 0, managerBusiness.financials?.monthlyRevenue ?? 0),
+    revenueTrend: managerBusiness.financials?.revenueTrend ?? [],
+    cashFlowTrend: (managerBusiness.financials?.revenueTrend ?? []).map((item: any) => ({
       label: item.label,
       value: Math.round(item.value * 0.64),
     })),
-    expenseBreakdown: managerBusiness.financials.expenseBreakdown,
+    expenseBreakdown: managerBusiness.financials?.expenseBreakdown ?? [],
   };
 
   return (
@@ -120,8 +117,8 @@ export default function ManagerDashboardPage() {
               <Building2 className="h-3.5 w-3.5" aria-hidden />
               Manager workspace
             </p>
-            <h2 className="mt-3 text-2xl font-bold text-slate-900">{managerBusiness.businessName}</h2>
-            <p className="mt-1 text-sm text-slate-600">{managerBusiness.legalName}</p>
+            <h2 className="mt-3 text-2xl font-bold text-slate-900">{managerBusiness.businessName || managerBusiness.name}</h2>
+            <p className="mt-1 text-sm text-slate-600">{managerBusiness.legalName || managerBusiness.legal_name}</p>
           </div>
 
           <div className="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 lg:max-w-md">
@@ -203,7 +200,7 @@ export default function ManagerDashboardPage() {
             { label: 'Net Profit', value: money(stats.profit), color: 'text-green-600' },
             { label: 'Profit Margin', value: stats.profitMargin, color: 'text-slate-900' },
           ]}
-          footer={`Updated today for ${managerBusiness.businessName}`}
+          footer={`Updated today for ${managerBusiness.businessName || managerBusiness.name}`}
         />
       </div>
 

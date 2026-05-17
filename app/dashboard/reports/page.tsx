@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, Download, BadgeCheck, CalendarClock, BookText, Scale, Wallet, Building2, BookOpen } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import { reportButtons } from './reportData';
@@ -73,6 +74,10 @@ export default function ReportsPage() {
       mounted = false;
     };
   }, []);
+
+  if (loading) {
+    return <BrandLoadingScreen title="Loading reports" subtitle="Preparing reports and business context for your dashboard." />;
+  }
 
   const selectedBusiness =
     businessOptions.find((business) => business.id === selectedBusinessId) ?? businessOptions[0];
@@ -334,7 +339,6 @@ export default function ReportsPage() {
         searchPlaceholder="Search reports..."
         pagination={true}
         itemsPerPage={10}
-        loading={loading}
       />
     </div>
   );

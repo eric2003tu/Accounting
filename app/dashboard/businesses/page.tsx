@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Building2, CircleDollarSign, TrendingUp, AlertTriangle, Plus } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
@@ -64,6 +65,10 @@ export default function BusinessesPage() {
     };
   }, []);
 
+  if (loading) {
+    return <BrandLoadingScreen title="Loading businesses" subtitle="Preparing your portfolio overview and business records." />;
+  }
+
   function money(value: number) {
     const sign = value < 0 ? '-' : '';
     return `${sign}$${Math.abs(value).toLocaleString()}`;
@@ -121,7 +126,6 @@ export default function BusinessesPage() {
         description="Full profile and financial position for your businesses"
         data={businesses}
         fileName="owner-businesses"
-        loading={loading}
         columns={[
           { key: 'businessName', label: 'Business' },
           { key: 'legalName', label: 'Legal Name' },

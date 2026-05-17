@@ -4,6 +4,7 @@ import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Building2, Plus, DollarSign, BadgeCheck, Clock3 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
@@ -399,7 +400,7 @@ function ExpensesPageContent() {
 
 export default function ExpensesPage() {
   return (
-    <Suspense fallback={<div className="text-slate-600">Loading expenses...</div>}>
+    <Suspense fallback={<BrandLoadingScreen title="Loading expenses" subtitle="Preparing expense records for the selected business." />}>
       <ExpensesPageContent />
     </Suspense>
   );

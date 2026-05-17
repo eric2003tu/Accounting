@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   UserRound,
 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
 import usersClient from '@/app/lib/clients/usersClient';
 import businessClient from '@/app/lib/clients/businessClient';
@@ -101,7 +102,7 @@ export default function AdminUserDetailPage() {
   }, [userId]);
 
   if (!id) return <div className="text-slate-600">Invalid user id.</div>;
-  if (loading) return <div className="text-slate-600">Loading...</div>;
+  if (loading) return <BrandLoadingScreen title="Loading user" subtitle="Fetching profile, business assignments, and access details." />;
   if (error || !user) return <div className="text-slate-600">{error || 'User not found.'}</div>;
 
   const totalRevenue = ownedBusinesses.reduce((sum, business) => sum + (business.financials?.monthlyRevenue || 0), 0);

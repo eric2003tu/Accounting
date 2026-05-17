@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   UserRound,
 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
 import businessClient from '@/app/lib/clients/businessClient';
 import usersClient from '@/app/lib/clients/usersClient';
@@ -91,7 +92,7 @@ export default function AdminBusinessDetailPage() {
     return <div className="text-slate-600">Invalid business id.</div>;
   }
 
-  if (loading) return <div className="text-slate-600">Loading...</div>;
+  if (loading) return <BrandLoadingScreen title="Loading business details" subtitle="Fetching admin business records and ownership data." />;
 
   if (error || !business) {
     return (

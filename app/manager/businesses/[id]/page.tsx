@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   UserRound,
 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import SimpleChart from '@/app/components/manager/SimpleChart';
 import businessClient from '@/app/lib/clients/businessClient';
 import usersClient from '@/app/lib/clients/usersClient';
@@ -84,7 +85,7 @@ export default function DashboardBusinessDetailPage() {
   }, [businessId]);
 
   if (!id) return <div className="text-slate-600">Invalid business id.</div>;
-  if (loading) return <div className="text-slate-600">Loading...</div>;
+  if (loading) return <BrandLoadingScreen title="Loading business" subtitle="Fetching the business detail and linked owner context." />;
   if (error || !business) return <div className="text-slate-600">{error || 'Business not found.'}</div>;
 
   const profitMargin = ratio(business.financials?.netProfit || 0, business.financials?.monthlyRevenue || 0);

@@ -13,6 +13,7 @@ import {
   Mail,
   Phone,
 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
 import { businessClient, usersClient } from '@/app/lib/apiClients';
 
@@ -72,7 +73,7 @@ export default function DashboardBusinessDetailPage({ params }: { params: { id: 
     };
   }, [id, router]);
 
-  if (loading) return <div className="text-slate-600">Loading business...</div>;
+  if (loading) return <BrandLoadingScreen title="Loading business" subtitle="Fetching business profile and related records." />;
   if (!business) return <div className="text-slate-600">Business not found.</div>;
 
   const fin = business.financials || {

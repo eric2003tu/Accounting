@@ -3,6 +3,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, Download, BadgeCheck, CalendarClock, BookText, Scale, Wallet, Building2, BookOpen } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/manager/StatCard';
 import DataTable from '@/app/components/manager/DataTable';
 import { reportButtons } from './reportData';
@@ -58,6 +59,10 @@ export default function ManagerReportsPage() {
       mounted = false;
     };
   }, []);
+
+  if (loading) {
+    return <BrandLoadingScreen title="Loading reports" subtitle="Preparing report data for your assigned business." />;
+  }
 
   const scopedReports = useMemo(() => {
     return reportItems.filter((report) => {
@@ -234,7 +239,6 @@ export default function ManagerReportsPage() {
           },
         ]}
         searchPlaceholder="Search reports..."
-        loading={loading}
         itemsPerPage={10}
       />
     </div>

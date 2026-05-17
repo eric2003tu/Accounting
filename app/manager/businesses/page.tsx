@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   Plus,
 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/manager/StatCard';
 import DataTable from '@/app/components/manager/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
@@ -93,6 +94,10 @@ export default function DashboardBusinessesPage() {
       mounted = false;
     };
   }, []);
+
+  if (loading) {
+    return <BrandLoadingScreen title="Loading businesses" subtitle="Preparing your assigned business portfolio." />;
+  }
 
   const totalRevenue = businesses.reduce((sum, row) => sum + row.monthlyRevenue, 0);
   const totalProfit = businesses.reduce((sum, row) => sum + row.netProfit, 0);

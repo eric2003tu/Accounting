@@ -3,7 +3,7 @@ import { VerifyOtpContent } from './VerifyOtpContent';
 
 export default function VerifyOtpPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<BrandLoadingScreen title="Verifying code" subtitle="Preparing your OTP verification step." />}>
       <VerifyOtpContent />
     </Suspense>
   );

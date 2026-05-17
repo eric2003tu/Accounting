@@ -17,6 +17,7 @@ import {
   User,
   X,
 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import { businessClient, usersClient, businessUsersClient } from '@/app/lib/apiClients';
 
 const currentOwnerId = 5;
@@ -131,7 +132,7 @@ export default function AssignLeaderPage() {
     : null;
 
   // Loading / error guards
-  if (loading) return null;
+  if (loading) return <BrandLoadingScreen title="Loading assignment" subtitle="Fetching the business, users, and current owner access." />;
   if (fetchError) return (
     <div className="rounded-xl border border-red-200 bg-red-50 p-4">
       <p className="text-sm font-semibold text-red-900">{fetchError}</p>
@@ -240,15 +241,19 @@ export default function AssignLeaderPage() {
       errorMessage: '',
     }));
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await businessUsersClient.assign({
+        business_id: String(businessId),
+        user_id: String(selectedUser.id),
+        role: 'OWNER',
+      });
+
       setState((prev) => ({
         ...prev,
         isSubmitting: false,
         successMessage: `${selectedUser.name} has been successfully assigned as the manager/accountant for ${business.businessName}!`,
       }));
 
-      // Reset form after 2 seconds
       setTimeout(() => {
         setState((prev) => ({
           ...prev,
@@ -257,7 +262,14 @@ export default function AssignLeaderPage() {
           successMessage: '',
         }));
       }, 2000);
-    }, 1000);
+    } catch (err) {
+      console.error('Failed to assign business user', err);
+      setState((prev) => ({
+        ...prev,
+        isSubmitting: false,
+        errorMessage: 'Failed to assign the selected user to the business.',
+      }));
+    }
   };
 
   return (

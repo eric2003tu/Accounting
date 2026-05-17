@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Users, UserCheck, UserX } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
@@ -62,6 +63,10 @@ export default function AdminUsersPage() {
       mounted = false;
     };
   }, []);
+
+  if (loading) {
+    return <BrandLoadingScreen title="Loading users" subtitle="Fetching user accounts and access records." />;
+  }
 
   const active = users.filter((item) => item.status === 'Active').length;
   const suspended = users.filter((item) => item.status === 'Suspended').length;
@@ -180,7 +185,6 @@ export default function AdminUsersPage() {
             },
           ]}
           searchPlaceholder="Search users..."
-          loading={loading}
         />
       )}
 

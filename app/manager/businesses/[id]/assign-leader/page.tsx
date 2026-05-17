@@ -203,15 +203,19 @@ export default function AssignLeaderPage() {
       errorMessage: '',
     }));
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await businessUsersClient.assign({
+        business_id: String(businessId),
+        user_id: String(selectedUser.id),
+        role: 'OWNER',
+      });
+
       setState((prev) => ({
         ...prev,
         isSubmitting: false,
         successMessage: `${selectedUser.name} has been successfully assigned as the manager/accountant for ${business.businessName}!`,
       }));
 
-      // Reset form after 2 seconds
       setTimeout(() => {
         setState((prev) => ({
           ...prev,
@@ -220,7 +224,14 @@ export default function AssignLeaderPage() {
           successMessage: '',
         }));
       }, 2000);
-    }, 1000);
+    } catch (err) {
+      console.error('Failed to assign business user', err);
+      setState((prev) => ({
+        ...prev,
+        isSubmitting: false,
+        errorMessage: 'Failed to assign the selected user to the business.',
+      }));
+    }
   };
 
   return (

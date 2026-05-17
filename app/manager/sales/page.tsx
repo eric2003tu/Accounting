@@ -35,7 +35,7 @@ export default function SalesPage() {
     : [];
 
   return (
-    <Suspense fallback={<div className="text-slate-600">Loading sales...</div>}>
+    <Suspense fallback={<BrandLoadingScreen title="Loading sales" subtitle="Preparing sales records for your assigned business." />}>
       <SalesBoard
         role="manager"
         routeBase="/manager/sales"

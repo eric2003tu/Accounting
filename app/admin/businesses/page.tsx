@@ -8,6 +8,7 @@ import {
   TrendingUp,
   AlertTriangle,
 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import businessClient from '@/app/lib/clients/businessClient';
@@ -50,6 +51,7 @@ export default function AdminBusinessesPage() {
   const [businesses, setBusinesses] = useState<UiBusiness[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [businessToDelete, setBusinessToDelete] = useState<UiBusiness | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -97,7 +99,10 @@ export default function AdminBusinessesPage() {
       mounted = false;
     };
   }, []);
-  const [businessToDelete, setBusinessToDelete] = useState<UiBusiness | null>(null);
+
+  if (loading) {
+    return <BrandLoadingScreen title="Loading businesses" subtitle="Preparing the admin portfolio and ownership data." />;
+  }
 
   const totalRevenue = businesses.reduce((sum, row) => sum + (row.monthlyRevenue || 0), 0);
   const totalProfit = businesses.reduce((sum, row) => sum + (row.netProfit || 0), 0);
@@ -332,7 +337,6 @@ export default function AdminBusinessesPage() {
           },
         ]}
         searchPlaceholder="Search businesses, owners, or financial values..."
-        loading={loading}
       />
       )}
 

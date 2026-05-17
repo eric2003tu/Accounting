@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SalesCreateForm from '@/app/components/sales/SalesCreateForm';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import { businessClient } from '@/app/lib/apiClients';
 
 function AddSalePageContent() {
@@ -31,7 +32,7 @@ function AddSalePageContent() {
     return () => { mounted = false; };
   }, []);
 
-  if (loading) return <div className="text-slate-600">Loading add sale form...</div>;
+  if (loading) return <BrandLoadingScreen title="Loading sale form" subtitle="Preparing the sales entry form and business list." />;
 
   const safeDefaultBusinessId = businessOptions.some((item) => item.id === initialBusinessId) ? initialBusinessId : businessOptions[0]?.id ?? '';
 
@@ -48,7 +49,7 @@ function AddSalePageContent() {
 
 export default function AddSalePage() {
   return (
-    <Suspense fallback={<div className="text-slate-600">Loading add sale form...</div>}>
+    <Suspense fallback={<BrandLoadingScreen title="Loading sale form" subtitle="Preparing the sales entry form and business list." />}>
       <AddSalePageContent />
     </Suspense>
   );

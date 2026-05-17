@@ -17,7 +17,7 @@ export default function PurchasesPage() {
     : [];
 
   return (
-    <Suspense fallback={<div className="text-slate-600">Loading purchases...</div>}>
+    <Suspense fallback={<BrandLoadingScreen title="Loading purchases" subtitle="Preparing purchase records for your assigned business." />}>
       <PurchasesBoard
         role="manager"
         routeBase="/manager/purchases"

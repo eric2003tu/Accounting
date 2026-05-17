@@ -7,6 +7,7 @@ import { Building2, Boxes, Package, AlertTriangle, TrendingUp, DollarSign, Plus 
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import ProductEditModal from '@/app/components/products/ProductEditModal';
 import { buildProductColumns, buildProductFilters } from '@/app/components/products/productTableConfig';
 import { businessClient, productsClient } from '@/app/lib/apiClients';
@@ -254,7 +255,7 @@ function ProductsPageContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="text-slate-600">Loading products...</div>}>
+    <Suspense fallback={<BrandLoadingScreen title="Loading products" subtitle="Preparing your product catalog and inventory view." />}>
       <ProductsPageContent />
     </Suspense>
   );

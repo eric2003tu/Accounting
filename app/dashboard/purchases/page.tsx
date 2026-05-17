@@ -27,7 +27,7 @@ export default function PurchasesPage() {
     return () => { mounted = false; };
   }, []);
 
-  if (loading) return <div className="text-slate-600">Loading purchases...</div>;
+  if (loading) return <BrandLoadingScreen title="Loading purchases" subtitle="Preparing purchase records for the selected business." />;
 
   return (
     <PurchasesBoard

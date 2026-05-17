@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { ChartColumn, FileText, BadgeCheck } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import reportsClient from '@/app/lib/clients/reportsClient';
@@ -50,6 +51,10 @@ export default function AdminReportsPage() {
     };
   }, []);
 
+  if (loading) {
+    return <BrandLoadingScreen title="Loading reports" subtitle="Fetching governance and platform performance reports." />;
+  }
+
   const ready = reports.filter((item) => item.status === 'Ready').length;
 
   return (
@@ -96,7 +101,6 @@ export default function AdminReportsPage() {
           },
         ]}
         searchPlaceholder="Search reports..."
-        loading={loading}
       />
     </div>
   );

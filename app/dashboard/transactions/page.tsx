@@ -4,6 +4,7 @@ import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Building2, Plus, Filter, Receipt, TrendingUp, Wallet } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import { businessClient } from '@/app/lib/apiClients';
@@ -570,7 +571,7 @@ function TransactionsPageContent() {
 
 export default function TransactionsPage() {
   return (
-    <Suspense fallback={<div className="text-slate-600">Loading transactions...</div>}>
+    <Suspense fallback={<BrandLoadingScreen title="Loading transactions" subtitle="Preparing cashflow and journal activity for the selected business." />}>
       <TransactionsPageContent />
     </Suspense>
   );

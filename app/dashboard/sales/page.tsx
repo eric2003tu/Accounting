@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import SalesBoard from '@/app/components/sales/SalesBoard';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import { businessClient } from '@/app/lib/apiClients';
 
 const currentOwnerId = 5;
@@ -33,7 +34,7 @@ export default function SalesPage() {
     return () => { mounted = false; };
   }, []);
 
-  if (loading) return <div className="text-slate-600">Loading sales...</div>;
+  if (loading) return <BrandLoadingScreen title="Loading sales" subtitle="Preparing sales records for the selected business." />;
 
   return (
     <SalesBoard

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import ReportDetailView from '@/app/components/manager/ReportDetailView';
 import { reportsClient, businessClient } from '@/app/lib/apiClients';
 
@@ -66,7 +67,7 @@ export default function ReportDetailPage() {
   }, [reportId, router]);
 
   if (loading) {
-    return <div className="text-slate-600">Loading report...</div>;
+    return <BrandLoadingScreen title="Loading report" subtitle="Fetching the report detail and linked business context." />;
   }
 
   if (error || !report) {

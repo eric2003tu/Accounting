@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PurchasesCreateForm from '@/app/components/purchases/PurchasesCreateForm';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import { businessClient } from '@/app/lib/apiClients';
 
 function AddPurchasePageContent() {
@@ -47,7 +48,7 @@ function AddPurchasePageContent() {
 
 export default function AddPurchasePage() {
   return (
-    <Suspense fallback={<div className="text-slate-600">Loading add purchase form...</div>}>
+    <Suspense fallback={<BrandLoadingScreen title="Loading purchase form" subtitle="Preparing the purchase entry form and business list." />}>
       <AddPurchasePageContent />
     </Suspense>
   );

@@ -4,6 +4,7 @@ import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Building2, Plus, TrendingUp, BadgeCheck, Clock3 } from 'lucide-react';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import StatCard from '@/app/components/dashboard/StatCard';
 import DataTable from '@/app/components/dashboard/DataTable';
 import SimpleChart from '@/app/components/dashboard/SimpleChart';
@@ -376,7 +377,7 @@ function IncomePageContent() {
 
 export default function IncomePage() {
   return (
-    <Suspense fallback={<div className="text-slate-600">Loading income...</div>}>
+    <Suspense fallback={<BrandLoadingScreen title="Loading income" subtitle="Preparing income records for the selected business." />}>
       <IncomePageContent />
     </Suspense>
   );
