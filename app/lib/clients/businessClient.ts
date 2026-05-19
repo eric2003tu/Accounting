@@ -1,6 +1,50 @@
 import type { BusinessDto } from '../types';
 import { apiFetch } from './appClient';
 
+export type DashboardTrendPoint = {
+  label: string;
+  value: number;
+};
+
+export type DashboardStatCard = {
+  title: string;
+  value: number;
+  change?: string | number;
+  note?: string;
+};
+
+export type DashboardTransaction = {
+  type: string;
+  sign: '+' | '-';
+  amount: number;
+  date: string;
+  description: string;
+};
+
+export type DashboardExpenseBreakdownRow = {
+  label: string;
+  amount: number;
+  percent?: number;
+};
+
+export type PortfolioDashboardDto = {
+  stat_cards: DashboardStatCard[];
+  total_income: number;
+  total_income_month?: number;
+  total_income_change_pct?: number;
+  total_expenses: number;
+  total_expenses_month?: number;
+  total_expenses_change_pct?: number;
+  account_balance: number;
+  pending_invoices: number;
+  recent_transactions: DashboardTransaction[];
+  gross_income: number;
+  net_profit: number;
+  revenue_trend: DashboardTrendPoint[];
+  cashflow_trend: DashboardTrendPoint[];
+  expense_breakdown: DashboardExpenseBreakdownRow[];
+};
+
 type OwnedBusinessFinancials = {
   monthlyRevenue: number;
   monthlyExpenses: number;
@@ -65,6 +109,79 @@ function toNumber(value: unknown): number {
   return 0;
 }
 
+function toText(value: unknown, fallback = ''): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return fallback;
+}
+
+function normalizeTrend(points: unknown): DashboardTrendPoint[] {
+  if (!Array.isArray(points)) return [];
+  return points.map((point: any) => ({
+    label: toText(point?.label),
+    value: toNumber(point?.value),
+  }));
+}
+
+function normalizeStatCards(cards: unknown): DashboardStatCard[] {
+  if (!Array.isArray(cards)) return [];
+  return cards.map((card: any) => ({
+    title: toText(card?.title),
+    value: toNumber(card?.value),
+    change: card?.change,
+    note: toText(card?.note),
+  }));
+}
+
+function normalizeTransactions(transactions: unknown): DashboardTransaction[] {
+  if (!Array.isArray(transactions)) return [];
+  return transactions.map((item: any) => ({
+    type: toText(item?.type),
+    sign: item?.sign === '-' ? '-' : '+',
+    amount: toNumber(item?.amount),
+    date: toText(item?.date),
+    description: toText(item?.description),
+  }));
+}
+
+function normalizeExpenseBreakdown(input: unknown): DashboardExpenseBreakdownRow[] {
+  if (Array.isArray(input)) {
+    return input.map((row: any) => ({
+      label: toText(row?.label || row?.name || 'Other'),
+      amount: toNumber(row?.amount ?? row?.value),
+      percent: typeof row?.percent === 'number' ? row.percent : undefined,
+    }));
+  }
+
+  if (!input || typeof input !== 'object') return [];
+
+  return Object.entries(input as Record<string, any>).map(([label, row]) => ({
+    label,
+    amount: toNumber((row as any)?.amount ?? (row as any)?.value),
+    percent: typeof (row as any)?.percent === 'number' ? (row as any).percent : undefined,
+  }));
+}
+
+function normalizePortfolioDashboard(raw: Record<string, any> | null | undefined): PortfolioDashboardDto {
+  return {
+    stat_cards: normalizeStatCards(raw?.stat_cards),
+    total_income: toNumber(raw?.total_income),
+    total_income_month: toNumber(raw?.total_income_month),
+    total_income_change_pct: toNumber(raw?.total_income_change_pct),
+    total_expenses: toNumber(raw?.total_expenses),
+    total_expenses_month: toNumber(raw?.total_expenses_month),
+    total_expenses_change_pct: toNumber(raw?.total_expenses_change_pct),
+    account_balance: toNumber(raw?.account_balance),
+    pending_invoices: toNumber(raw?.pending_invoices),
+    recent_transactions: normalizeTransactions(raw?.recent_transactions),
+    gross_income: toNumber(raw?.gross_income),
+    net_profit: toNumber(raw?.net_profit),
+    revenue_trend: normalizeTrend(raw?.revenue_trend),
+    cashflow_trend: normalizeTrend(raw?.cashflow_trend),
+    expense_breakdown: normalizeExpenseBreakdown(raw?.expense_breakdown),
+  };
+}
+
 function parseReportData(report: Record<string, any> | undefined): Record<string, any> | null {
   if (!report?.data) return null;
   if (typeof report.data === 'object') return report.data;
@@ -127,9 +244,35 @@ async function fetchBusinessArray(path: string): Promise<OwnedBusinessDto[]> {
 }
 
 export const businessClient = {
-  getAll: (params = ''): Promise<BusinessDto[]> => apiFetch(`/business${params ? `?${params}` : ''}`, { method: 'GET', withAuth: true }),
+  getAll: async (params = ''): Promise<BusinessDto[]> => {
+    const res = await apiFetch(`/business${params ? `?${params}` : ''}`, { method: 'GET', withAuth: true });
+    if (!res) return [];
+    if (Array.isArray(res)) return res as BusinessDto[];
+    if (Array.isArray((res as Record<string, any>)?.data)) return (res as Record<string, any>).data as BusinessDto[];
+    return [(res as Record<string, any>).data ?? res] as BusinessDto[];
+  },
   getOwned: (): Promise<BusinessDto[]> => fetchBusinessArray('/business/owned/my-business'),
   getManaged: (): Promise<BusinessDto[]> => fetchBusinessArray('/business/managed/my-business'),
+  getOwnedDashboard: async (): Promise<PortfolioDashboardDto> => {
+    const res = await apiFetch('/business/owned/dashboard', { method: 'GET', withAuth: true });
+    return normalizePortfolioDashboard(res);
+  },
+  getManagedDashboard: async (): Promise<PortfolioDashboardDto> => {
+    try {
+      const res = await apiFetch('/business/managed/dashboard', { method: 'GET', withAuth: true });
+      return normalizePortfolioDashboard(res);
+    } catch (error: any) {
+      if (error?.status === 404) {
+        const owned = await apiFetch('/business/owned/dashboard', { method: 'GET', withAuth: true });
+        return normalizePortfolioDashboard(owned);
+      }
+      throw error;
+    }
+  },
+  getAdminDashboard: async (): Promise<PortfolioDashboardDto> => {
+    const res = await apiFetch('/business/admin/dashboard', { method: 'GET', withAuth: true });
+    return normalizePortfolioDashboard(res);
+  },
   getById: (id: string): Promise<BusinessDto> => apiFetch(`/business/${id}`, { method: 'GET', withAuth: true }),
   create: (payload: Record<string, any>): Promise<BusinessDto> => apiFetch('/business', { method: 'POST', body: JSON.stringify(payload), withAuth: true }),
   delete: (id: string): Promise<void> => apiFetch(`/business/${id}`, { method: 'DELETE', withAuth: true }),

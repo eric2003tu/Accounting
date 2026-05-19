@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Plus,
   TrendingUp,
   DollarSign,
   Wallet,
@@ -19,8 +18,37 @@ import TransactionCard from '@/app/components/manager/TransactionCard';
 import SummaryCard from '@/app/components/manager/SummaryCard';
 import QuickActionButton from '@/app/components/manager/QuickActionButton';
 import { businessClient } from '@/app/lib/apiClients';
+import type { PortfolioDashboardDto } from '@/app/lib/clients/businessClient';
+import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 
-const recentTransactions = [
+type UiTransaction = {
+  icon: typeof ArrowUpRight;
+  category: string;
+  description: string;
+  amount: number;
+  date: string;
+  type: 'income' | 'expense';
+};
+
+const defaultManagerDashboard: PortfolioDashboardDto = {
+  stat_cards: [],
+  total_income: 0,
+  total_income_month: 0,
+  total_income_change_pct: 0,
+  total_expenses: 0,
+  total_expenses_month: 0,
+  total_expenses_change_pct: 0,
+  account_balance: 0,
+  pending_invoices: 0,
+  recent_transactions: [],
+  gross_income: 0,
+  net_profit: 0,
+  revenue_trend: [],
+  cashflow_trend: [],
+  expense_breakdown: [],
+};
+
+const fallbackRecentTransactions: UiTransaction[] = [
   {
     icon: ArrowUpRight,
     category: 'Enterprise Retainer',
@@ -55,6 +83,26 @@ const recentTransactions = [
   },
 ];
 
+function toNumber(value: unknown) {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value.replace(/[^0-9.-]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+function mapDashboardTransactions(transactions: PortfolioDashboardDto['recent_transactions']): UiTransaction[] {
+  return transactions.map((transaction) => ({
+    icon: transaction.sign === '-' ? ArrowDownLeft : ArrowUpRight,
+    category: transaction.type || (transaction.sign === '-' ? 'Expense' : 'Income'),
+    description: transaction.description || 'Transaction',
+    amount: toNumber(transaction.amount),
+    date: transaction.date,
+    type: transaction.sign === '-' ? 'expense' : 'income',
+  }));
+}
+
 function money(value: number) {
   return `$${Math.abs(value).toLocaleString()}.00`;
 }
@@ -69,23 +117,39 @@ function percent(numerator: number, denominator: number) {
 
 export default function ManagerDashboardPage() {
   const [managerBusiness, setManagerBusiness] = React.useState<any | null>(null);
+  const [managerDashboard, setManagerDashboard] = React.useState<PortfolioDashboardDto>(defaultManagerDashboard);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     let mounted = true;
     (async () => {
+      setLoading(true);
       try {
-        const list = await businessClient.getManaged();
+        const [list, dashboard] = await Promise.all([
+          businessClient.getManaged(),
+          businessClient.getManagedDashboard(),
+        ]);
         if (!mounted) return;
         setManagerBusiness((list || [])[0] ?? null);
+        setManagerDashboard(dashboard || defaultManagerDashboard);
       } catch (err) {
         console.error('Failed to load manager business', err);
-        if (mounted) setManagerBusiness(null);
+        if (mounted) {
+          setManagerBusiness(null);
+          setManagerDashboard(defaultManagerDashboard);
+        }
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
     return () => { mounted = false; };
   }, []);
 
   if (!managerBusiness) {
+    if (loading) {
+      return <BrandLoadingScreen title="Loading manager workspace" subtitle="Syncing the assigned business and reports." />;
+    }
+
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-6 text-slate-700">
         Manager business assignment is missing or loading.
@@ -94,19 +158,30 @@ export default function ManagerDashboardPage() {
   }
 
   const stats = {
-    income: managerBusiness.financials?.monthlyRevenue ?? 0,
-    expenses: managerBusiness.financials?.monthlyExpenses ?? 0,
-    balance: managerBusiness.financials?.cashBalance ?? 0,
-    pending: managerBusiness.financials?.overdueInvoices ?? 0,
-    profit: managerBusiness.financials?.netProfit ?? 0,
-    profitMargin: percent(managerBusiness.financials?.netProfit ?? 0, managerBusiness.financials?.monthlyRevenue ?? 0),
-    revenueTrend: managerBusiness.financials?.revenueTrend ?? [],
-    cashFlowTrend: (managerBusiness.financials?.revenueTrend ?? []).map((item: any) => ({
-      label: item.label,
-      value: Math.round(item.value * 0.64),
-    })),
-    expenseBreakdown: managerBusiness.financials?.expenseBreakdown ?? [],
+    income: toNumber(managerDashboard.total_income || managerBusiness.financials?.monthlyRevenue),
+    expenses: toNumber(managerDashboard.total_expenses || managerBusiness.financials?.monthlyExpenses),
+    balance: toNumber(managerDashboard.account_balance || managerBusiness.financials?.cashBalance),
+    pending: toNumber(managerDashboard.pending_invoices || managerBusiness.financials?.overdueInvoices),
+    profit: toNumber(managerDashboard.net_profit || managerBusiness.financials?.netProfit),
+    profitMargin: percent(
+      toNumber(managerDashboard.net_profit || managerBusiness.financials?.netProfit),
+      toNumber(managerDashboard.total_income || managerBusiness.financials?.monthlyRevenue)
+    ),
+    revenueTrend: managerDashboard.revenue_trend?.length ? managerDashboard.revenue_trend : (managerBusiness.financials?.revenueTrend ?? []),
+    cashFlowTrend: managerDashboard.cashflow_trend?.length
+      ? managerDashboard.cashflow_trend
+      : (managerBusiness.financials?.revenueTrend ?? []).map((item: any) => ({
+          label: item.label,
+          value: Math.round(item.value * 0.64),
+        })),
+    expenseBreakdown: managerDashboard.expense_breakdown?.length
+      ? managerDashboard.expense_breakdown.map((item) => ({ label: item.label, value: item.amount }))
+      : (managerBusiness.financials?.expenseBreakdown ?? []),
   };
+
+  const recentTransactions = managerDashboard.recent_transactions?.length
+    ? mapDashboardTransactions(managerDashboard.recent_transactions)
+    : fallbackRecentTransactions;
 
   return (
     <div className="space-y-6">
