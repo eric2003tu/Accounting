@@ -287,6 +287,20 @@ function normalizeBusiness(raw: Record<string, any>): OwnedBusinessDto {
   return normalized;
 }
 
+function unwrapBusinessListResponse(res: unknown): Record<string, any>[] {
+  if (!res) return [];
+  if (Array.isArray(res)) return res as Record<string, any>[];
+
+  if (typeof res === 'object') {
+    const data = (res as Record<string, any>).data;
+    if (Array.isArray(data)) return data as Record<string, any>[];
+    if (data && typeof data === 'object') return [data as Record<string, any>];
+    return [res as Record<string, any>];
+  }
+
+  return [];
+}
+
 function normalizeCreateBusinessPayload(input: CreateBusinessPayload): Record<string, any> {
   const rawFiscalDate = toText(input?.fiscal_year_start);
   const fiscalYearStart = /^\d{4}-\d{2}-\d{2}$/.test(rawFiscalDate)
@@ -308,9 +322,7 @@ function normalizeCreateBusinessPayload(input: CreateBusinessPayload): Record<st
 async function fetchBusinessArray(path: string): Promise<OwnedBusinessDto[]> {
   try {
     const res = await apiFetch(path, { method: 'GET', withAuth: true });
-    if (!res) return [];
-    if (Array.isArray(res)) return res.map((item) => normalizeBusiness(item));
-    return [normalizeBusiness(res)];
+    return unwrapBusinessListResponse(res).map((item) => normalizeBusiness(item));
   } catch (error: any) {
     if (error?.status === 404) return [];
     throw error;
