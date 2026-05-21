@@ -56,6 +56,9 @@ export default function LoginPage() {
                 <p>
                   <span className="font-semibold text-slate-900">Business Manager:</span> jean.claude@accplan.com / User@12345
                 </p>
+                <p>
+                  <span className="font-semibold text-slate-900">Normal User:</span> user@accplan.com / User@12345
+                </p>
               </div>
             </div>
 

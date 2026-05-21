@@ -27,6 +27,51 @@ export type DashboardExpenseBreakdownRow = {
   percent?: number;
 };
 
+export type OwnerApplicationBusinessDto = {
+  id: string | number;
+  name?: string | null;
+  legal_name?: string | null;
+  legalName?: string | null;
+  trade_name?: string | null;
+  tradeName?: string | null;
+  contact_email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  city?: string | null;
+  country?: string | null;
+  industry?: string | null;
+  status?: string | null;
+  monthly_revenue?: number | string | null;
+  monthly_expenses?: number | string | null;
+  cash_balance?: number | string | null;
+  net_profit?: number | string | null;
+  created_at?: string | null;
+};
+
+export type OwnerApplicationUserDto = {
+  id: string | number;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  created_at?: string | null;
+};
+
+export type OwnerApplicationDto = {
+  id: string | number;
+  business_id: string | number;
+  user_id: string | number;
+  status: string;
+  created_at?: string | null;
+  business?: OwnerApplicationBusinessDto | null;
+  user?: OwnerApplicationUserDto | null;
+};
+
+export type OwnerApplicationListResponse = {
+  count: number;
+  status: string;
+  data: OwnerApplicationDto[];
+};
+
 export type PortfolioDashboardDto = {
   stat_cards: DashboardStatCard[];
   total_income: number;
@@ -273,6 +318,20 @@ export const businessClient = {
     const res = await apiFetch('/business/admin/dashboard', { method: 'GET', withAuth: true });
     return normalizePortfolioDashboard(res);
   },
+  getOwnerApplications: async (skip = 0, take = 50): Promise<OwnerApplicationListResponse> => {
+    const params = new URLSearchParams();
+    params.set('skip', String(skip));
+    params.set('take', String(take));
+    const res = await apiFetch(`/business/admin/owner-applications?${params.toString()}`, { method: 'GET', withAuth: true });
+    return {
+      count: toNumber((res as Record<string, any>)?.count ?? 0),
+      status: toText((res as Record<string, any>)?.status ?? ''),
+      data: Array.isArray((res as Record<string, any>)?.data) ? (res as Record<string, any>).data : [],
+    };
+  },
+  applyOwner: (businessId: string | number, userId?: string | number): Promise<unknown> =>
+    apiFetch(`/business/${businessId}/apply-owner`, { method: 'POST', body: JSON.stringify({ userId }), withAuth: true }),
+  approveOwner: (businessId: string | number, userId: string | number): Promise<unknown> => apiFetch(`/business/${businessId}/approve-owner`, { method: 'POST', body: JSON.stringify({ userId }), withAuth: true }),
   getById: (id: string): Promise<BusinessDto> => apiFetch(`/business/${id}`, { method: 'GET', withAuth: true }),
   create: (payload: Record<string, any>): Promise<BusinessDto> => apiFetch('/business', { method: 'POST', body: JSON.stringify(payload), withAuth: true }),
   delete: (id: string): Promise<void> => apiFetch(`/business/${id}`, { method: 'DELETE', withAuth: true }),

@@ -1,4 +1,4 @@
-export type NotificationAudience = 'admin' | 'dashboard';
+export type NotificationAudience = 'admin' | 'dashboard' | 'normal';
 export type NotificationSeverity = 'info' | 'success' | 'warning' | 'critical';
 
 export type NotificationItem = {
@@ -128,6 +128,62 @@ export const notifications: NotificationItem[] = [
     createdAt: '2026-04-11 22:00',
     actionLabel: 'Inspect logs',
     link: '/admin/audit-logs',
+  },
+  {
+    id: 9,
+    audience: 'normal',
+    title: 'Your profile is ready for review',
+    message: 'Complete your profile details so your owner application can be processed faster.',
+    businessName: 'Personal Workspace',
+    ownerName: 'Normal User',
+    severity: 'info',
+    category: 'System',
+    status: 'Unread',
+    createdAt: '2026-04-12 08:15',
+    actionLabel: 'Open profile',
+    link: '/normal/profile',
+  },
+  {
+    id: 10,
+    audience: 'normal',
+    title: 'Application checklist updated',
+    message: 'Your owner application checklist now includes identity, experience, and support documents.',
+    businessName: 'Personal Workspace',
+    ownerName: 'Normal User',
+    severity: 'success',
+    category: 'System',
+    status: 'Unread',
+    createdAt: '2026-04-12 09:00',
+    actionLabel: 'Start application',
+    link: '/normal/apply-owner',
+  },
+  {
+    id: 11,
+    audience: 'normal',
+    title: 'Monthly spending summary is available',
+    message: 'Review your latest activity snapshot and savings progress in the personal dashboard.',
+    businessName: 'Personal Workspace',
+    ownerName: 'Normal User',
+    severity: 'success',
+    category: 'Financial Statement',
+    status: 'Read',
+    createdAt: '2026-04-11 17:20',
+    actionLabel: 'Open dashboard',
+    link: '/normal',
+  },
+  {
+    id: 12,
+    audience: 'normal',
+    title: 'Security settings reminder',
+    message: 'Enable two-step verification and keep your contact details up to date.',
+    businessName: 'Personal Workspace',
+    ownerName: 'Normal User',
+    severity: 'warning',
+    category: 'Security',
+    status: 'Unread',
+    createdAt: '2026-04-11 21:05',
+    actionLabel: 'Update settings',
+    link: '/normal/settings',
   },
 ];
 

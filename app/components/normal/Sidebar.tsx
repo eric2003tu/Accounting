@@ -4,49 +4,38 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Shield,
-  Users,
-  Building2,
-  UserCog,
-  ClipboardList,
-  KeyRound,
-  CreditCard,
-  Plug,
-  FileSearch,
-  ChartColumn,
-  Server,
+  BadgeCheck,
+  Bell,
   ChevronRight,
-  ArrowLeftRight,
-  LogOut,
+  History,
+  LayoutDashboard,
+  Settings,
+  Sparkles,
+  User,
 } from 'lucide-react';
 
-type AdminSidebarProps = {
+type SidebarProps = {
   isOpen: boolean;
   mobileOpen: boolean;
   onClose: () => void;
 };
 
 const menuItems = [
-  { name: 'Overview', path: '/admin', icon: Shield },
-  { name: 'Users', path: '/admin/users', icon: Users },
-  { name: 'Businesses', path: '/admin/businesses', icon: Building2 },
-  { name: 'Owner Applications', path: '/admin/owner-applications', icon: ClipboardList },
-  { name: 'Roles', path: '/admin/roles', icon: UserCog },
-  { name: 'Permissions', path: '/admin/permissions', icon: KeyRound },
-  { name: 'Billing', path: '/admin/billing', icon: CreditCard },
-  { name: 'Integrations', path: '/admin/integrations', icon: Plug },
-  { name: 'Audit Logs', path: '/admin/audit-logs', icon: FileSearch },
-  { name: 'Reports', path: '/admin/reports', icon: ChartColumn },
-  { name: 'System', path: '/admin/system', icon: Server },
+  { name: 'Dashboard', path: '/normal', icon: LayoutDashboard },
+  { name: 'Notifications', path: '/normal/notifications', icon: Bell },
+  { name: 'Apply to be an Owner', path: '/normal/apply-owner', icon: BadgeCheck },
+  { name: 'Profile', path: '/normal/profile', icon: User },
+  { name: 'Settings', path: '/normal/settings', icon: Settings },
 ];
 
-export default function AdminSidebar({ isOpen, mobileOpen, onClose }: AdminSidebarProps) {
+export default function Sidebar({ isOpen, mobileOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
-    if (path === '/admin') {
-      return pathname === '/admin';
+    if (path === '/normal') {
+      return pathname === '/normal';
     }
+
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 
@@ -55,13 +44,14 @@ export default function AdminSidebar({ isOpen, mobileOpen, onClose }: AdminSideb
       {mobileOpen && (
         <button
           type="button"
-          aria-label="Close admin sidebar"
+          aria-label="Close normal sidebar"
           className="fixed inset-0 z-40 bg-slate-950/45 lg:hidden"
           onClick={onClose}
         />
       )}
 
       <aside
+        data-normal-sidebar
         className={`fixed inset-y-0 left-0 z-50 flex h-screen w-72 -translate-x-full flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-white transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:translate-x-0 lg:transition-all ${
           mobileOpen ? 'translate-x-0' : ''
         } ${isOpen ? 'lg:w-64' : 'lg:w-20'}`}
@@ -69,18 +59,18 @@ export default function AdminSidebar({ isOpen, mobileOpen, onClose }: AdminSideb
         <div className="flex h-16 items-center justify-between border-b border-slate-800 px-4 flex-none">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 font-bold text-white flex-shrink-0">
-              SA
+              NU
             </div>
             {isOpen && (
               <div className="flex flex-col">
-                <span className="text-sm font-bold">System Admin</span>
-                <span className="text-xs text-slate-400">Control Plane</span>
+                <span className="text-sm font-bold">Normal Workspace</span>
+                <span className="text-xs text-slate-400">Personal access</span>
               </div>
             )}
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 min-h-0">
+        <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4 lg:overflow-y-visible">
           <ul className="space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -93,7 +83,7 @@ export default function AdminSidebar({ isOpen, mobileOpen, onClose }: AdminSideb
                     onClick={onClose}
                     className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ${
                       active
-                        ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border-r-2 border-green-400'
+                        ? 'border-r-2 border-green-400 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400'
                         : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
                     }`}
                     title={!isOpen ? item.name : ''}
@@ -113,30 +103,26 @@ export default function AdminSidebar({ isOpen, mobileOpen, onClose }: AdminSideb
         </nav>
 
         <div className="border-t border-slate-800 p-3 flex-none">
-          <ul className="space-y-2">
-            {/* <li>
-              <Link
-                href="/dashboard"
-                onClick={onClose}
-                className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all duration-200"
-                title={!isOpen ? 'Business Dashboard' : ''}
-              >
-                <ArrowLeftRight className="h-5 w-5 flex-shrink-0" />
-                {isOpen && <span>Business Dashboard</span>}
-              </Link>
-            </li> */}
-            {/* <li>
-              <Link
-                href="/login"
-                onClick={onClose}
-                className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-red-900/20 hover:text-red-400 transition-all duration-200"
-                title={!isOpen ? 'Logout' : ''}
-              >
-                <LogOut className="h-5 w-5 flex-shrink-0" />
-                {isOpen && <span>Logout</span>}
-              </Link>
-            </li> */}
-          </ul>
+          <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200">
+              <Sparkles className="h-3.5 w-3.5" />
+              Upgrade path
+            </div>
+            {isOpen && (
+              <>
+                <p className="mt-3 text-sm leading-6 text-slate-200">
+                  Apply to become an owner and unlock portfolio tracking, business tools, and advanced reporting.
+                </p>
+                <Link
+                  href="/normal/apply-owner"
+                  onClick={onClose}
+                  className="mt-4 inline-flex items-center justify-center rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-600"
+                >
+                  Start application
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </aside>
     </>

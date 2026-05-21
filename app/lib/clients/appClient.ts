@@ -124,7 +124,7 @@ export function getHomeRouteForRole(role?: string | null): string {
   if (normalized === 'ADMIN') return '/admin';
   if (normalized === 'MANAGER') return '/manager';
   if (normalized === 'OWNER') return '/dashboard';
-  return '/dashboard';
+  return '/normal';
 }
 
 export default {
