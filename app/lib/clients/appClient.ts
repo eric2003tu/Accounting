@@ -129,6 +129,10 @@ export function getHomeRouteForRole(role?: string | null): string {
   return '/normal';
 }
 
+export async function applyToBeOwner(): Promise<any> {
+  return apiFetch('/business/apply-owner', { method: 'POST', withAuth: true });
+}
+
 export default {
   apiFetch,
   setAuthToken,
@@ -140,4 +144,5 @@ export default {
   hasRole,
   getCurrentUserRole,
   getHomeRouteForRole,
+  applyToBeOwner,
 };

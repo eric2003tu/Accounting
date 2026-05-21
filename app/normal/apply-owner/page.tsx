@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, BadgeCheck, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
 import { usersClient } from '@/app/lib/apiClients';
-import { getCurrentUser, setCurrentUser } from '@/app/lib/clients/appClient';
+import { getCurrentUser, setCurrentUser, applyToBeOwner } from '@/app/lib/clients/appClient';
 import type { BusinessDto } from '@/app/lib/types';
 
 function displayBusinessName(business: BusinessDto) {
@@ -37,11 +37,10 @@ export default function ApplyOwnerPage() {
       const user = getCurrentUser();
       if (!user || !user.id) throw new Error('You must be signed in to submit an application.');
 
-      // Update the user's system role to request OWNER role. Admins will review this.
-      const updated = await usersClient.update(user.id, { system_role: 'OWNER' });
-      const normalized = { ...updated, id: String((updated as any).id) };
-      setCurrentUser(normalized as any);
+      // Call backend endpoint to apply to be owner (uses auth token only)
+      await applyToBeOwner();
       setSuccessMessage('Your application has been submitted. An admin will review your request.');
+      // refresh to reflect any server-side changes
       router.refresh();
     } catch (err: any) {
       setError(err?.body || err?.message || 'Failed to submit owner application.');
