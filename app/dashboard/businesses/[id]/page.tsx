@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -40,7 +40,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function DashboardBusinessDetailPage() {
-  const router = useRouter();
   const params = useParams();
 
   const id = params.id as string;
@@ -58,11 +57,12 @@ export default function DashboardBusinessDetailPage() {
 
         if (!id) {
           console.error('No business ID found');
-          router.push('/dashboard/businesses');
           return;
         }
 
-        const b = await businessClient.getById(id);
+        const ownedBusinesses = await businessClient.getOwned();
+        const ownedMatch = (ownedBusinesses || []).find((business: any) => String(business.id) === String(id));
+        const b = ownedMatch || await businessClient.getById(id);
 
         console.log('Business Data:', b);
 
@@ -70,7 +70,6 @@ export default function DashboardBusinessDetailPage() {
 
         if (!b) {
           console.error('Business not found');
-          router.push('/dashboard/businesses');
           return;
         }
 
@@ -93,7 +92,7 @@ export default function DashboardBusinessDetailPage() {
         console.error('Failed to load business', err);
 
         if (mounted) {
-          router.push('/dashboard/businesses');
+          // keep the user on the detail page and show the error state instead of redirecting away
         }
       } finally {
         if (mounted) {
@@ -107,7 +106,7 @@ export default function DashboardBusinessDetailPage() {
     return function () {
       mounted = false;
     };
-  }, [id, router]);
+  }, [id]);
 
   if (loading) {
     return (

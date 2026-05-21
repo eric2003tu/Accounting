@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, LayoutDashboard, LogOut, UserRound } from 'lucide-react';
 import { getCurrentUser, clearAuth, getHomeRouteForRole } from '@/app/lib/clients/appClient';
 
 const items = [
@@ -19,6 +19,7 @@ const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCurrentUser(getCurrentUser());
@@ -28,6 +29,19 @@ const NavBar = () => {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [userMenuOpen]);
+
   const userInitials = (user: any | null) => {
     if (!user) return '';
     const first = (user.first_name || user.firstName || (user.name || '').split(' ')[0] || '').toString().trim();
@@ -36,6 +50,9 @@ const NavBar = () => {
     const fallback = (user.name || user.email || '').toString().trim();
     return fallback.slice(0, 2).toUpperCase();
   };
+
+  const homeRoute = getHomeRouteForRole(currentUser?.system_role || currentUser?.role) || '/';
+  const profileRoute = `${homeRoute}${homeRoute === '/' ? 'profile' : '/profile'}`;
 
   return (
     <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur-sm">
@@ -82,33 +99,53 @@ const NavBar = () => {
           {/* Desktop Buttons / User Menu */}
           <div className="hidden md:flex items-center gap-2 relative">
             {currentUser ? (
-              <div className="relative">
+              <div ref={menuRef} className="relative">
                 <button
                   onClick={() => setUserMenuOpen((s) => !s)}
-                  className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-2.5 py-1.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-green-200 hover:bg-green-50 hover:text-green-950"
                 >
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-green-900 text-sm font-semibold text-white">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-green-900 to-emerald-700 text-sm font-semibold text-white shadow-sm">
                     {userInitials(currentUser)}
                   </span>
-                  <ChevronDown className="h-4 w-4 text-zinc-700" />
+                  <ChevronDown className={`h-4 w-4 transition-transform ${userMenuOpen ? 'rotate-180 text-green-900' : 'text-zinc-500'}`} />
                 </button>
 
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-md border bg-white shadow-lg z-50">
+                  <div className="absolute right-0 mt-3 w-72 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_20px_45px_rgba(15,23,42,0.14)] z-50">
+                    <div className="border-b border-zinc-100 bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-green-900 to-emerald-700 text-sm font-semibold text-white shadow-sm">
+                          {userInitials(currentUser)}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-zinc-900">
+                            {currentUser.name || currentUser.email || 'Account'}
+                          </p>
+                          <p className="truncate text-xs text-zinc-500">{currentUser.email || 'Signed in user'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-2">
                     <Link
-                      href={getHomeRouteForRole(currentUser.system_role || currentUser.role) || '/'}
-                      className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100"
+                      href={homeRoute}
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-950"
                       onClick={() => setUserMenuOpen(false)}
                     >
+                      <LayoutDashboard className="h-4 w-4 text-green-700" />
                       Dashboard
                     </Link>
                     <Link
-                      href={`${getHomeRouteForRole(currentUser.system_role || currentUser.role) || '/'}${getHomeRouteForRole(currentUser.system_role || currentUser.role) === '/' ? 'profile' : '/profile'}`}
-                      className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100"
+                      href={profileRoute}
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-950"
                       onClick={() => setUserMenuOpen(false)}
                     >
+                      <UserRound className="h-4 w-4 text-green-700" />
                       Profile
                     </Link>
+                    </div>
+
+                    <div className="border-t border-zinc-100 p-2">
                     <button
                       onClick={() => {
                         clearAuth();
@@ -116,10 +153,12 @@ const NavBar = () => {
                         setUserMenuOpen(false);
                         router.push('/login');
                       }}
-                      className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100"
+                      className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 hover:text-red-800"
                     >
+                      <LogOut className="h-4 w-4" />
                       Logout
                     </button>
+                    </div>
                   </div>
                 )}
               </div>

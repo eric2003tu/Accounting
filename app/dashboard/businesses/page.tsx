@@ -25,7 +25,8 @@ export default function BusinessesPage() {
         if (!mounted) return;
         const mapped = (list || []).map((b: any) => ({
           id: b.id,
-          businessName: b.name ?? b.businessName ?? '',
+          businessName:
+            b.name ?? b.businessName ?? b.business_name ?? b.trade_name ?? b.tradeName ?? `Business ${b.id}`,
           legalName: b.legal_name ?? '',
           tradeName: b.trade_name ?? '',
           taxId: b.vat_number ?? '',
@@ -127,7 +128,19 @@ export default function BusinessesPage() {
         data={businesses}
         fileName="owner-businesses"
         columns={[
-          { key: 'businessName', label: 'Business' },
+          {
+            key: 'businessName',
+            label: 'Business',
+            width: 'min-w-[220px]',
+            render: (value: any, row: any) => (
+              <Link
+                href={`/dashboard/businesses/${row.id}`}
+                className="block max-w-[240px] truncate font-semibold text-slate-900 transition-colors hover:text-green-700"
+              >
+                {value || `Business ${row.id}`}
+              </Link>
+            ),
+          },
           { key: 'legalName', label: 'Legal Name' },
           { key: 'tradeName', label: 'Trade Name' },
           { key: 'taxId', label: 'Tax ID' },
