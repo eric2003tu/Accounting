@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import useRequireAuth from '@/app/lib/auth/useRequireAuth';
 import AdminSidebar from '@/app/components/admin/AdminSidebar';
 import AdminHeader from '@/app/components/admin/AdminHeader';
 
@@ -11,6 +12,9 @@ export default function AdminLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const ready = useRequireAuth(undefined, { allowedHomeRoute: '/admin' });
+
+  if (!ready) return null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-300 text-slate-900">

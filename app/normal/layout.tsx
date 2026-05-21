@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Sidebar from '@/app/components/normal/Sidebar';
 import DashboardHeader from '@/app/components/normal/DashboardHeader';
+import useRequireAuth from '@/app/lib/auth/useRequireAuth';
 
 export default function NormalLayout({
   children,
@@ -11,6 +12,9 @@ export default function NormalLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const ready = useRequireAuth(undefined, { allowedHomeRoute: '/normal' });
+
+  if (!ready) return null;
 
   return (
     <div data-normal-shell className="flex h-screen overflow-hidden bg-gray-300 text-slate-900">

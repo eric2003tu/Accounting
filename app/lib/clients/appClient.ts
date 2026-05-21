@@ -109,14 +109,15 @@ export function hasRole(required: string | string[]): boolean {
   const user = getCurrentUser();
   if (!user) return false;
   const roles = Array.isArray(required) ? required : [required];
-  const userRole = (user.system_role || user.systemRole || user.role || '').toString();
-  return roles.includes(userRole);
+  const userRole = (user.system_role || user.systemRole || user.role || '').toString().trim().toUpperCase();
+  const normalizedRoles = roles.map((role) => role.toString().trim().toUpperCase());
+  return normalizedRoles.includes(userRole);
 }
 
 export function getCurrentUserRole(): string {
   const user = getCurrentUser();
   if (!user) return '';
-  return (user.system_role || user.systemRole || user.role || '').toString().toUpperCase();
+  return (user.system_role || user.systemRole || user.role || '').toString().trim().toUpperCase();
 }
 
 export function getHomeRouteForRole(role?: string | null): string {
@@ -124,6 +125,7 @@ export function getHomeRouteForRole(role?: string | null): string {
   if (normalized === 'ADMIN') return '/admin';
   if (normalized === 'MANAGER') return '/manager';
   if (normalized === 'OWNER') return '/dashboard';
+  if (normalized === 'NORMAL' || normalized === 'USER') return '/normal';
   return '/normal';
 }
 

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/dashboard/Sidebar';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
+import useRequireAuth from '@/app/lib/auth/useRequireAuth';
 
 export default function DashboardLayout({
   children,
@@ -11,6 +12,9 @@ export default function DashboardLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const ready = useRequireAuth(undefined, { allowedHomeRoute: '/dashboard' });
+
+  if (!ready) return null;
 
   return (
     <div data-dashboard-shell className="flex h-screen overflow-hidden bg-gray-300 text-slate-900">
