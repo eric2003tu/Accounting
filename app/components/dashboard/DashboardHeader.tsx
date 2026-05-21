@@ -5,12 +5,19 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Bell, Clock, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { useNotifications } from '@/app/notifications/useNotifications';
+import { clearAuth, getCurrentUser, type User as AppUser } from '@/app/lib/clients/appClient';
 
 type DashboardHeaderProps = {
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
   onOpenMobileSidebar: () => void;
 };
+
+function displayName(user: AppUser | null) {
+  if (!user) return 'Business Owner';
+  const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
+  return fullName || user.email || 'Business Owner';
+}
 
 export default function DashboardHeader({
   sidebarOpen,
@@ -21,7 +28,12 @@ export default function DashboardHeader({
   const router = useRouter();
   const { unreadCount } = useNotifications('dashboard');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCurrentUser(getCurrentUser());
+  }, []);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -38,7 +50,7 @@ export default function DashboardHeader({
   }, [profileMenuOpen]);
 
   const handleLogout = () => {
-    localStorage.removeItem('mockAuthUser');
+    clearAuth();
     router.push('/login');
   };
   const title = pathname === '/dashboard/notifications' ? 'Notifications' : 'Dashboard';
@@ -101,7 +113,7 @@ export default function DashboardHeader({
             className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-slate-200 hover:bg-slate-50 rounded-lg p-2 transition-colors"
           >
             <div className="hidden sm:flex flex-col items-end">
-              <p className="text-sm font-medium text-slate-900 font-semibold">Eric TUYISHIME</p>
+              <p className="text-sm font-medium text-slate-900 font-semibold">{displayName(currentUser)}</p>
               <p className="text-xs text-slate-500">Business Owner</p>
             </div>
             <User className="h-5 w-5 text-slate-700" />
@@ -115,8 +127,8 @@ export default function DashboardHeader({
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg border border-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.15)] z-50">
               {/* User Info */}
               <div className="border-b border-slate-200 p-4">
-                <p className="text-sm font-semibold text-slate-900">Eric TUYISHIME</p>
-                <p className="text-xs text-slate-600 mt-1">eric.tuyishime@company.com</p>
+                <p className="text-sm font-semibold text-slate-900">{displayName(currentUser)}</p>
+                <p className="text-xs text-slate-600 mt-1">{currentUser?.email || 'owner@accplan.com'}</p>
                 <p className="text-xs text-green-700 font-medium mt-2">Business Owner</p>
               </div>
 

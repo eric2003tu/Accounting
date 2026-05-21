@@ -7,12 +7,19 @@ import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { Menu, Bell, Clock, ShieldCheck, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { useNotifications } from '@/app/notifications/useNotifications';
+import { clearAuth, getCurrentUser, type User as AppUser } from '@/app/lib/clients/appClient';
 
 type AdminHeaderProps = {
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
   onOpenMobileSidebar: () => void;
 };
+
+function displayName(user: AppUser | null) {
+  if (!user) return 'System Administrator';
+  const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
+  return fullName || user.email || 'System Administrator';
+}
 
 const pageTitleByPath: Record<string, string> = {
   '/admin': 'Admin Overview',
@@ -36,7 +43,12 @@ export default function AdminHeader({
   const router = useRouter();
   const { unreadCount } = useNotifications('admin');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCurrentUser(getCurrentUser());
+  }, []);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -53,7 +65,7 @@ export default function AdminHeader({
   }, [profileMenuOpen]);
 
   const handleLogout = () => {
-    localStorage.removeItem('mockAuthUser');
+    clearAuth();
     router.push('/login');
   };
 
@@ -117,7 +129,7 @@ export default function AdminHeader({
             className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-slate-200 hover:bg-slate-50 rounded-lg p-2 transition-colors"
           >
             <div className="hidden sm:flex flex-col items-end">
-              <p className="text-sm font-semibold text-slate-900">Eric TUYISHIME</p>
+              <p className="text-sm font-semibold text-slate-900">{displayName(currentUser)}</p>
               <p className="text-xs text-slate-500">System Administrator</p>
             </div>
             <ShieldCheck className="h-5 w-5 text-slate-700" />
@@ -131,8 +143,8 @@ export default function AdminHeader({
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg border border-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.15)] z-50">
               {/* User Info */}
               <div className="border-b border-slate-200 p-4">
-                <p className="text-sm font-semibold text-slate-900">Eric TUYISHIME</p>
-                <p className="text-xs text-slate-600 mt-1">eric.tuyishime@company.com</p>
+                <p className="text-sm font-semibold text-slate-900">{displayName(currentUser)}</p>
+                <p className="text-xs text-slate-600 mt-1">{currentUser?.email || 'admin@accplan.com'}</p>
                 <p className="text-xs text-blue-700 font-medium mt-2">System Administrator</p>
               </div>
 
