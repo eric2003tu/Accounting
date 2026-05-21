@@ -329,6 +329,10 @@ export const businessClient = {
       data: Array.isArray((res as Record<string, any>)?.data) ? (res as Record<string, any>).data : [],
     };
   },
+  approveOwnerApplication: (applicationId: string | number): Promise<{ success: boolean }> =>
+    apiFetch(`/business/admin/owner-applications/${applicationId}/approve`, { method: 'PATCH', withAuth: true }),
+  rejectOwnerApplication: (applicationId: string | number): Promise<{ success: boolean }> =>
+    apiFetch(`/business/admin/owner-applications/${applicationId}/reject`, { method: 'PATCH', withAuth: true }),
   applyOwner: (businessId: string | number, userId?: string | number): Promise<unknown> =>
     apiFetch(`/business/${businessId}/apply-owner`, { method: 'POST', body: JSON.stringify({ userId }), withAuth: true }),
   approveOwner: (businessId: string | number, userId: string | number): Promise<unknown> => apiFetch(`/business/${businessId}/approve-owner`, { method: 'POST', body: JSON.stringify({ userId }), withAuth: true }),

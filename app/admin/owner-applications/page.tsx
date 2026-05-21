@@ -128,7 +128,7 @@ export default function OwnerApplicationsPage() {
     setApprovingId(String(application.id));
 
     try {
-      await businessClient.approveOwner(application.business_id, application.user_id);
+      await businessClient.approveOwnerApplication(application.id);
       setActionMessage(`Approved ${displayApplicantName(application)} for ${displayBusinessName(application)}.`);
       await refreshApplications();
     } catch (error: any) {
@@ -144,14 +144,11 @@ export default function OwnerApplicationsPage() {
     setRejectingId(String(application.id));
 
     try {
-      setApplications((current) =>
-        current.map((item) =>
-          String(item.id) === String(application.id)
-            ? { ...item, status: 'rejected' }
-            : item
-        )
-      );
-      setActionMessage(`Marked ${displayApplicantName(application)} as rejected in the review queue.`);
+      await businessClient.rejectOwnerApplication(application.id);
+      setActionMessage(`Rejected ${displayApplicantName(application)} for ${displayBusinessName(application)}.`);
+      await refreshApplications();
+    } catch (error: any) {
+      setActionError(error?.body || error?.message || 'Failed to reject the selected application.');
     } finally {
       setRejectingId('');
     }
@@ -216,6 +213,10 @@ export default function OwnerApplicationsPage() {
         const approving = approvingId === String(application.id);
         const rejecting = rejectingId === String(application.id);
 
+        if (status !== 'pending') {
+          return null;
+        }
+
         return (
           <div className="flex justify-end gap-2">
             <button
@@ -236,7 +237,7 @@ export default function OwnerApplicationsPage() {
                 event.stopPropagation();
                 void rejectApplication(application);
               }}
-              disabled={approving || rejecting || status === 'rejected'}
+              disabled={approving || rejecting}
               className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {rejecting ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <ThumbsDown className="h-3.5 w-3.5" />}
