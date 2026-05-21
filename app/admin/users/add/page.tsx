@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import businessClient from '@/app/lib/clients/businessClient';
+import type { CreateBusinessPayload } from '@/app/lib/clients/businessClient';
 import usersClient from '@/app/lib/clients/usersClient';
 import {
   ArrowLeft,
@@ -58,13 +59,15 @@ export default function AddBusinessOwnerPage() {
     setLoading(true);
 
     try {
-      const businessPayload = {
+      const businessPayload: CreateBusinessPayload = {
         name: businessName,
-        industry,
-        country,
-        vat_number: taxId || undefined,
-        timezone,
-        plan,
+        contact_email: ownerEmail,
+        phone: ownerPhone || undefined,
+        address: country,
+        fiscal_year_start: `${new Date().getFullYear()}-01-01`,
+        starting_money: 0,
+        loans: [],
+        loans_offered: [],
       };
 
       const createdBusiness = await businessClient.create(businessPayload);

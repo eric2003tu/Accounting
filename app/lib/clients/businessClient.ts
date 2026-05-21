@@ -72,6 +72,17 @@ export type OwnerApplicationListResponse = {
   data: OwnerApplicationDto[];
 };
 
+export type CreateBusinessPayload = {
+  name: string;
+  contact_email?: string;
+  phone?: string;
+  address?: string;
+  fiscal_year_start?: string;
+  starting_money?: number;
+  loans?: Array<Record<string, unknown>>;
+  loans_offered?: Array<Record<string, unknown>>;
+};
+
 export type PortfolioDashboardDto = {
   stat_cards: DashboardStatCard[];
   total_income: number;
@@ -276,6 +287,24 @@ function normalizeBusiness(raw: Record<string, any>): OwnedBusinessDto {
   return normalized;
 }
 
+function normalizeCreateBusinessPayload(input: CreateBusinessPayload): Record<string, any> {
+  const rawFiscalDate = toText(input?.fiscal_year_start);
+  const fiscalYearStart = /^\d{4}-\d{2}-\d{2}$/.test(rawFiscalDate)
+    ? rawFiscalDate
+    : new Date().toISOString().slice(0, 10);
+
+  return {
+    name: toText(input?.name),
+    contact_email: toText(input?.contact_email),
+    phone: toText(input?.phone),
+    address: toText(input?.address),
+    fiscal_year_start: fiscalYearStart,
+    starting_money: toNumber(input?.starting_money),
+    loans: Array.isArray(input?.loans) ? input.loans : [],
+    loans_offered: Array.isArray(input?.loans_offered) ? input.loans_offered : [],
+  };
+}
+
 async function fetchBusinessArray(path: string): Promise<OwnedBusinessDto[]> {
   try {
     const res = await apiFetch(path, { method: 'GET', withAuth: true });
@@ -337,7 +366,10 @@ export const businessClient = {
     apiFetch(`/business/${businessId}/apply-owner`, { method: 'POST', body: JSON.stringify({ userId }), withAuth: true }),
   approveOwner: (businessId: string | number, userId: string | number): Promise<unknown> => apiFetch(`/business/${businessId}/approve-owner`, { method: 'POST', body: JSON.stringify({ userId }), withAuth: true }),
   getById: (id: string): Promise<BusinessDto> => apiFetch(`/business/${id}`, { method: 'GET', withAuth: true }),
-  create: (payload: Record<string, any>): Promise<BusinessDto> => apiFetch('/business', { method: 'POST', body: JSON.stringify(payload), withAuth: true }),
+  create: (payload: CreateBusinessPayload): Promise<BusinessDto> => {
+    const body = normalizeCreateBusinessPayload(payload);
+    return apiFetch('/business', { method: 'POST', body: JSON.stringify(body), withAuth: true });
+  },
   delete: (id: string): Promise<void> => apiFetch(`/business/${id}`, { method: 'DELETE', withAuth: true }),
 };
 
