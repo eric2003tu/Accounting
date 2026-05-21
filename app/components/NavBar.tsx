@@ -102,16 +102,23 @@ const NavBar = () => {
               <div ref={menuRef} className="relative">
                 <button
                   onClick={() => setUserMenuOpen((s) => !s)}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-2.5 py-1.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-green-200 hover:bg-green-50 hover:text-green-950"
+                  className="inline-flex items-center gap-3 rounded-full border border-zinc-200 bg-white/95 px-3 py-1 text-sm font-medium text-zinc-700 shadow-sm transition-shadow hover:shadow-md hover:border-green-200 hover:bg-green-50"
                 >
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-green-900 to-emerald-700 text-sm font-semibold text-white shadow-sm">
-                    {userInitials(currentUser)}
-                  </span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${userMenuOpen ? 'rotate-180 text-green-900' : 'text-zinc-500'}`} />
+                  <div className="flex flex-col items-center mr-1">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-900 to-emerald-700 text-base font-bold text-white shadow-sm ring-1 ring-white">
+                      {userInitials(currentUser)}
+                    </span>
+                    {(currentUser?.system_role || currentUser?.role) && (
+                      <span className="mt-0.5 text-[10px] font-semibold text-green-800 uppercase tracking-wider">
+                        {(currentUser.system_role || currentUser.role).toString()}
+                      </span>
+                    )}
+                  </div>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${userMenuOpen ? 'rotate-180 text-green-900' : 'text-zinc-400'}`} />
                 </button>
 
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-3 w-72 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_20px_45px_rgba(15,23,42,0.14)] z-50">
+                  <div className="absolute right-0 mt-3 w-80 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_20px_45px_rgba(15,23,42,0.14)] z-50">
                     <div className="border-b border-zinc-100 bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-4">
                       <div className="flex items-center gap-3">
                         <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-green-900 to-emerald-700 text-sm font-semibold text-white shadow-sm">

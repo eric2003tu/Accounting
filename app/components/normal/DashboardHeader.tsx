@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BadgeCheck, Bell, ChevronDown, Clock3, LogOut, Menu, Settings, Sparkles, User } from 'lucide-react';
+import { BadgeCheck, Bell, ChevronDown, Clock3, HomeIcon, LogOut, Menu, Settings, Sparkles, User } from 'lucide-react';
 import { clearAuth, getCurrentUser, type User as AppUser } from '@/app/lib/clients/appClient';
 import { useNotifications } from '@/app/notifications/useNotifications';
 
@@ -156,6 +156,7 @@ export default function DashboardHeader({ sidebarOpen, onToggleSidebar, onOpenMo
                   <Settings className="h-4 w-4" />
                   Settings
                 </Link>
+
                 <Link
                   href="/normal/apply-owner"
                   onClick={() => setProfileMenuOpen(false)}
@@ -163,6 +164,13 @@ export default function DashboardHeader({ sidebarOpen, onToggleSidebar, onOpenMo
                 >
                   <BadgeCheck className="h-4 w-4" />
                   Apply to be an owner
+                </Link>
+                                <Link href="/"
+                  onClick={() => setProfileMenuOpen(false)}
+                   className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <HomeIcon className="h-4 w-4" />
+                  Home
                 </Link>
               </div>
 
