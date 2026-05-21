@@ -9,7 +9,7 @@ import {
   ListFilter,
 } from 'lucide-react';
 
-interface Column<T> {
+export interface Column<T> {
   key: keyof T;
   label: string;
   render?: (value: any, row: T) => React.ReactNode;
@@ -17,7 +17,7 @@ interface Column<T> {
   align?: 'left' | 'center' | 'right';
 }
 
-interface TableFilter<T> {
+export interface TableFilter<T> {
   key: keyof T;
   label: string;
   options: Array<{
@@ -26,7 +26,7 @@ interface TableFilter<T> {
   }>;
 }
 
-interface DataTableProps<T> {
+export interface DataTableProps<T> {
   title?: string;
   description?: string;
   columns: Column<T>[];

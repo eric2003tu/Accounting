@@ -10,7 +10,8 @@ import { getHomeRouteForRole } from '@/app/lib/clients/appClient';
 
 export default function GetStartedPage() {
   const router = useRouter();
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -25,14 +26,14 @@ export default function GetStartedPage() {
     setIsSubmitting(true);
 
     const payload = {
-      name: fullName.trim(),
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
       email: email.trim().toLowerCase(),
       password,
     };
 
     authClient
       .register(payload)
-      .then(() => authClient.login({ email: payload.email, password }))
       .then((res) => {
         const role = res?.user?.system_role || res?.user?.systemRole || null;
         router.push(getHomeRouteForRole(role));
@@ -60,20 +61,38 @@ export default function GetStartedPage() {
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-slate-700">
-                  Full name
-                </label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  placeholder="Jane Doe"
-                  value={fullName}
-                  onChange={(event) => setFullName(event.target.value)}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
-                />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="firstName" className="mb-2 block text-sm font-medium text-slate-700">
+                    First name
+                  </label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    required
+                    placeholder="Elevanie"
+                    value={firstName}
+                    onChange={(event) => setFirstName(event.target.value)}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="lastName" className="mb-2 block text-sm font-medium text-slate-700">
+                    Last name
+                  </label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    required
+                    placeholder="TUYISHIME"
+                    value={lastName}
+                    onChange={(event) => setLastName(event.target.value)}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
+                  />
+                </div>
               </div>
 
               <div>

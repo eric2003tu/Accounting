@@ -7,7 +7,11 @@ export const authClient = {
     applyLoginResponse(res);
     return res;
   },
-  register: (payload: Record<string, any>): Promise<UserDto> => apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
+  register: async (payload: Record<string, any>): Promise<AuthTokenDto> => {
+    const res = await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(payload) });
+    applyLoginResponse(res);
+    return res;
+  },
   me: async (): Promise<UserDto> => {
     const user = await apiFetch('/auth/me', { method: 'GET', withAuth: true });
     setCurrentUser(user);
