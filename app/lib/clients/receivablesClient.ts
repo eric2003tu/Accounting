@@ -1,8 +1,14 @@
 import type { ReceivableDto } from '../types';
-import { apiFetch } from './appClient';
+import { MOCK_RECEIVABLES } from '@/app/lib/mockData';
+
+function delay(ms = 100) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 
 export const receivablesClient = {
-  getAll: (businessId?: string): Promise<ReceivableDto[]> => apiFetch(`/receivables${businessId ? `?businessId=${businessId}` : ''}`, { method: 'GET', withAuth: true }),
+  getAll: async (businessId?: string): Promise<ReceivableDto[]> => {
+    await delay();
+    if (!businessId) return MOCK_RECEIVABLES;
+    return MOCK_RECEIVABLES.filter((r) => String(r.business_id) === businessId);
+  },
 };
 
 export default receivablesClient;

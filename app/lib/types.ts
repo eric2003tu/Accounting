@@ -57,6 +57,9 @@ export interface SaleDto {
   total?: number | string | null;
   paid?: number | string | null;
   status?: string | null;
+  payment_method?: string | null;
+  due_date?: string | null;
+  last_payment_date?: string | null;
   items?: SaleItemDto[] | null;
   customer?: any;
   created_at?: string | null;
@@ -81,6 +84,9 @@ export interface PurchaseDto {
   total?: number | string | null;
   paid?: number | string | null;
   status?: string | null;
+  payment_method?: string | null;
+  due_date?: string | null;
+  last_payment_date?: string | null;
   items?: PurchaseItemDto[] | null;
   supplier?: any;
   created_at?: string | null;

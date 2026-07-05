@@ -1,5 +1,9 @@
 import type { BusinessUserDto } from '../types';
-import { apiFetch } from './appClient';
+import { MOCK_BUSINESS_USERS } from '@/app/lib/mockData';
+
+function delay(ms = 150) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export type BusinessUserAssignmentPayload = {
   business_id: string;
@@ -21,12 +25,14 @@ function toQueryString(params?: BusinessUsersListParams): string {
 }
 
 export const businessUsersClient = {
-  getAll: (params: BusinessUsersListParams | string = ''): Promise<BusinessUserDto[]> => {
-    const query = typeof params === 'string' ? params : toQueryString(params);
-    return apiFetch(`/business-users${query ? `?${query}` : ''}`, { method: 'GET', withAuth: true, });
+  getAll: async (params: BusinessUsersListParams | string = ''): Promise<BusinessUserDto[]> => {
+    await delay();
+    return MOCK_BUSINESS_USERS;
   },
-  assign: (payload: BusinessUserAssignmentPayload): Promise<BusinessUserDto> =>
-    apiFetch('/business-users', { method: 'POST', body: JSON.stringify(payload), withAuth: true }),
+  assign: async (payload: BusinessUserAssignmentPayload): Promise<BusinessUserDto> => {
+    await delay();
+    return { id: Date.now(), business_id: Number(payload.business_id), user_id: Number(payload.user_id), role: payload.role };
+  },
 };
 
 export default businessUsersClient;

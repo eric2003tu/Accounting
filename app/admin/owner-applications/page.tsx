@@ -53,6 +53,13 @@ function formatDate(value?: string | null) {
   return value ? new Date(value).toLocaleString() : 'Not provided';
 }
 
+type ConfirmModalState = {
+  isOpen: boolean;
+  action: 'approve' | 'reject';
+  application: OwnerApplicationDto | null;
+  message: string;
+};
+
 export default function OwnerApplicationsPage() {
   const [applications, setApplications] = useState<OwnerApplicationDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +68,7 @@ export default function OwnerApplicationsPage() {
   const [actionMessage, setActionMessage] = useState('');
   const [approvingId, setApprovingId] = useState<string>('');
   const [rejectingId, setRejectingId] = useState<string>('');
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({ isOpen: false, action: 'approve', application: null, message: '' });
 
   useEffect(() => {
     let mounted = true;
@@ -122,35 +130,44 @@ export default function OwnerApplicationsPage() {
     }
   };
 
-  const approveApplication = async (application: OwnerApplicationDto) => {
-    setActionError('');
-    setActionMessage('');
-    setApprovingId(String(application.id));
-
-    try {
-      await businessClient.approveOwnerApplication(application.id);
-      setActionMessage(`Approved ${displayApplicantName(application)} for ${displayBusinessName(application)}.`);
-      await refreshApplications();
-    } catch (error: any) {
-      setActionError(error?.body || error?.message || 'Failed to approve the selected application.');
-    } finally {
-      setApprovingId('');
-    }
+  const openConfirmModal = (action: 'approve' | 'reject', application: OwnerApplicationDto) => {
+    setConfirmModal({ isOpen: true, action, application, message: '' });
   };
 
-  const rejectApplication = async (application: OwnerApplicationDto) => {
+  const closeConfirmModal = () => {
+    setConfirmModal({ isOpen: false, action: 'approve', application: null, message: '' });
+  };
+
+  const handleConfirmAction = async () => {
+    const { action, application, message } = confirmModal;
+    if (!application) return;
+
     setActionError('');
     setActionMessage('');
-    setRejectingId(String(application.id));
+    closeConfirmModal();
 
-    try {
-      await businessClient.rejectOwnerApplication(application.id);
-      setActionMessage(`Rejected ${displayApplicantName(application)} for ${displayBusinessName(application)}.`);
-      await refreshApplications();
-    } catch (error: any) {
-      setActionError(error?.body || error?.message || 'Failed to reject the selected application.');
-    } finally {
-      setRejectingId('');
+    if (action === 'approve') {
+      setApprovingId(String(application.id));
+      try {
+        await businessClient.approveOwnerApplication(application.id);
+        setActionMessage(`Approved ${displayApplicantName(application)} for ${displayBusinessName(application)}.${message ? ` Note: ${message}` : ''}`);
+        await refreshApplications();
+      } catch (error: any) {
+        setActionError(error?.body || error?.message || 'Failed to approve the selected application.');
+      } finally {
+        setApprovingId('');
+      }
+    } else {
+      setRejectingId(String(application.id));
+      try {
+        await businessClient.rejectOwnerApplication(application.id);
+        setActionMessage(`Rejected ${displayApplicantName(application)} for ${displayBusinessName(application)}.${message ? ` Reason: ${message}` : ''}`);
+        await refreshApplications();
+      } catch (error: any) {
+        setActionError(error?.body || error?.message || 'Failed to reject the selected application.');
+      } finally {
+        setRejectingId('');
+      }
     }
   };
 
@@ -223,7 +240,7 @@ export default function OwnerApplicationsPage() {
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                void approveApplication(application);
+                openConfirmModal('approve', application);
               }}
               disabled={approving || rejecting}
               className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
@@ -235,7 +252,7 @@ export default function OwnerApplicationsPage() {
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                void rejectApplication(application);
+                openConfirmModal('reject', application);
               }}
               disabled={approving || rejecting}
               className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
@@ -280,6 +297,53 @@ export default function OwnerApplicationsPage() {
         exportable={false}
         emptyMessage="No owner applications available"
       />
+
+      {confirmModal.isOpen && confirmModal.application && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <h3 className="text-lg font-semibold text-slate-900">
+              {confirmModal.action === 'approve' ? 'Approve Application' : 'Reject Application'}
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">
+              {confirmModal.action === 'approve'
+                ? `Approve ${displayApplicantName(confirmModal.application)} for ${displayBusinessName(confirmModal.application)}`
+                : `Reject ${displayApplicantName(confirmModal.application)} for ${displayBusinessName(confirmModal.application)}`}
+            </p>
+
+            <label className="mt-4 block text-sm font-medium text-slate-700">
+              {confirmModal.action === 'approve' ? 'Approval note (optional)' : 'Rejection reason (optional)'}
+              <textarea
+                value={confirmModal.message}
+                onChange={(e) => setConfirmModal((prev) => ({ ...prev, message: e.target.value }))}
+                rows={3}
+                placeholder={confirmModal.action === 'approve' ? 'Add any notes for this approval...' : 'Provide a reason for rejection...'}
+                className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-200"
+              />
+            </label>
+
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeConfirmModal}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAction}
+                className={`rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition ${
+                  confirmModal.action === 'approve'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {confirmModal.action === 'approve' ? 'Approve' : 'Reject'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

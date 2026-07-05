@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Shield, Building2, Users, User as UserIcon, Loader2 } from 'lucide-react';
 import authClient from '@/app/lib/clients/authClient';
 import { getHomeRouteForRole } from '@/app/lib/clients/appClient';
+
+const ROLE_PRESETS = [
+  { label: 'Admin', email: 'admin@accplan.com', icon: Shield, color: 'bg-purple-600 hover:bg-purple-700' },
+  { label: 'Owner', email: 'eric.tuyishime@accplan.com', icon: Building2, color: 'bg-green-600 hover:bg-green-700' },
+  { label: 'Manager', email: 'jean.claude@accplan.com', icon: Users, color: 'bg-blue-600 hover:bg-blue-700' },
+  { label: 'Normal', email: 'user@accplan.com', icon: UserIcon, color: 'bg-amber-600 hover:bg-amber-700' },
+];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,22 +23,26 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const login = useCallback(async (e: string, p: string) => {
     setError('');
     setIsSubmitting(true);
-    authClient
-      .login({ email: email.trim().toLowerCase(), password })
-      .then((res) => {
-        const role = res?.user?.system_role || res?.user?.systemRole || null;
-        router.push(getHomeRouteForRole(role));
-      })
-      .catch((err) => {
-        // eslint-disable-next-line no-console
-        console.error(err);
-        setError(err?.message || 'Login failed.');
-      })
-      .finally(() => setIsSubmitting(false));
+    try {
+      const res = await authClient.login({ email: e.trim().toLowerCase(), password: p });
+      const role = res?.user?.system_role || res?.user?.systemRole || null;
+      router.push(getHomeRouteForRole(role));
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || 'Login failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [router]);
+
+  const handleQuickLogin = (e: string) => login(e, 'User@12345');
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    login(email, password);
   };
 
   return (
@@ -48,17 +59,21 @@ export default function LoginPage() {
             </p>
 
             <div className="mt-6 rounded-xl border border-green-200 bg-green-50/60 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-green-800">Test Credentials</p>
-              <div className="mt-3 space-y-2 text-sm text-slate-700">
-                <p>
-                  <span className="font-semibold text-slate-900">Business Owner:</span> eric.tuyishime@accplan.com / User@12345
-                </p>
-                <p>
-                  <span className="font-semibold text-slate-900">Business Manager:</span> jean.claude@accplan.com / User@12345
-                </p>
-                <p>
-                  <span className="font-semibold text-slate-900">Normal User:</span> user@accplan.com / User@12345
-                </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-green-800">Quick Login</p>
+              <p className="mt-1 text-xs text-green-700">Click a role to log in instantly (all use <strong>User@12345</strong>)</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {ROLE_PRESETS.map(({ label, email: e, icon: Icon, color }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => handleQuickLogin(e)}
+                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-white transition disabled:opacity-60 ${color}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
 

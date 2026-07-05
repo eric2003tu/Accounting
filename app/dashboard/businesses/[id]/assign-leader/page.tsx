@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 import BrandLoadingScreen from '@/app/components/BrandLoadingScreen';
 import { businessClient, usersClient, businessUsersClient } from '@/app/lib/apiClients';
-
-const currentOwnerId = 5;
+import { getCurrentUser } from '@/app/lib/clients/appClient';
+import { MOCK_ACCOUNTANTS } from '@/app/lib/mockData';
 
 interface AssignmentState {
   selectedUserId: number | null;
@@ -41,6 +41,8 @@ interface CreateAccountantForm {
 export default function AssignLeaderPage() {
   const params = useParams();
   const router = useRouter();
+  const currentUser = getCurrentUser();
+  const currentOwnerId = currentUser ? Number(currentUser.id) : 0;
   
   const [state, setState] = useState<AssignmentState>({
     selectedUserId: null,
@@ -92,10 +94,20 @@ export default function AssignLeaderPage() {
           };
         });
 
-        const ownerUser = mappedUsers.find((u: any) => String(u.id) === String(currentOwnerId)) || (b && mappedUsers.find((u: any) => String(u.id) === String(b.ownerId)));
+        // Merge mock accountants
+        const mappedAccountants = MOCK_ACCOUNTANTS.map((a: any) => ({
+          ...a,
+          isAssigned: false,
+          businessRole: null,
+          system_role: 'ACCOUNTANT',
+        }));
+
+        const allUsers = [...mappedAccountants, ...mappedUsers];
+
+        const ownerUser = allUsers.find((u: any) => String(u.id) === String(currentOwnerId)) || (b && allUsers.find((u: any) => String(u.id) === String(b.ownerId)));
 
         setBusiness(b);
-        setUsersList(mappedUsers || []);
+        setUsersList(allUsers || []);
         setOwner(ownerUser || null);
         setLoading(false);
         // Validate - redirect if unauthorized or not found

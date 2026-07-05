@@ -83,12 +83,13 @@ export default function ReportsPage() {
     businessOptions.find((business) => business.id === selectedBusinessId) ?? businessOptions[0];
 
   const reportsWithBusiness = reportItems.map((report) => {
-    const businessId = report.businessId ?? report.business_id ?? reportBusinessMap[report.id] ?? 'all';
-    const business = businessOptions.find((item) => String(item.id) === String(businessId)) ?? businessOptions[0];
+    const rawId = report.businessId ?? report.business_id ?? reportBusinessMap[report.id] ?? 'all';
+    const bid = String(rawId);
+    const business = businessOptions.find((item) => item.id === bid) ?? businessOptions[0];
 
     return {
       ...report,
-      businessId,
+      businessId: bid,
       businessName: business.name,
     };
   });

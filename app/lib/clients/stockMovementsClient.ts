@@ -1,9 +1,18 @@
 import type { StockMovementDto } from '../types';
-import { apiFetch } from './appClient';
+import { MOCK_STOCK_MOVEMENTS, generateId } from '@/app/lib/mockData';
+
+function delay(ms = 100) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 
 export const stockMovementsClient = {
-  getAll: (businessId?: string): Promise<StockMovementDto[]> => apiFetch(`/stock-movements${businessId ? `?businessId=${businessId}` : ''}`, { method: 'GET', withAuth: true }),
-  create: (payload: Record<string, any>): Promise<StockMovementDto> => apiFetch('/stock-movements', { method: 'POST', body: JSON.stringify(payload), withAuth: true }),
+  getAll: async (businessId?: string): Promise<StockMovementDto[]> => {
+    await delay();
+    if (!businessId) return MOCK_STOCK_MOVEMENTS;
+    return MOCK_STOCK_MOVEMENTS.filter((s) => String(s.business_id) === businessId);
+  },
+  create: async (payload: Record<string, any>): Promise<StockMovementDto> => {
+    await delay();
+    return { id: generateId(), ...payload, created_at: new Date().toISOString() } as StockMovementDto;
+  },
 };
 
 export default stockMovementsClient;

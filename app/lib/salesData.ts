@@ -119,7 +119,7 @@ function mapApiSaleToSaleRecord(apiSale: any, productsMap: Record<string, any>):
     paymentStatus: paidAmount >= totalAmount ? 'Fully Paid' : paidAmount > 0 ? 'Partially Paid' : 'Unpaid',
     paymentMethod: apiSale.payment_method ?? 'Unknown',
     dueDate: apiSale.due_date ?? '',
-    lastPaymentDate: apiSale.lastPaymentDate ?? '',
+    lastPaymentDate: apiSale.last_payment_date ?? '',
     deliveryStatus: 'Pending',
     salesperson: apiSale.salesperson ?? '',
     notes: apiSale.description ?? apiSale.notes ?? '',

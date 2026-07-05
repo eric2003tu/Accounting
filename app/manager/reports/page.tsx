@@ -10,26 +10,9 @@ import { reportButtons } from './reportData';
 import reportsClient from '@/app/lib/clients/reportsClient';
 
 const managerBusiness = {
-  id: 'acme',
-  name: 'Acme Holdings Ltd',
-  legalName: 'Primary Investment Company',
-};
-
-const reportBusinessMap: Record<number, string> = {
-  1: 'acme',
-  2: 'acme',
-  3: 'acme',
-  4: 'acme',
-  5: 'acme',
-  6: 'nexa',
-  7: 'nexa',
-  8: 'nexa',
-  9: 'peak',
-  10: 'peak',
-  11: 'acme',
-  12: 'acme',
-  13: 'nexa',
-  14: 'peak',
+  id: '1',
+  name: 'Kigali Tech Solutions',
+  legalName: 'Kigali Tech Solutions Ltd',
 };
 
 export default function ManagerReportsPage() {
@@ -66,9 +49,8 @@ export default function ManagerReportsPage() {
 
   const scopedReports = useMemo(() => {
     return reportItems.filter((report) => {
-      // try to match by business id or fallback map for legacy seeded ids
-      if (String(report.businessId) === String(managerBusiness.id) || String(report.business_id) === String(managerBusiness.id)) return true;
-      return (reportBusinessMap[report.id] ?? 'acme') === managerBusiness.id;
+      const bid = String(report.businessId ?? report.business_id ?? '');
+      return bid === managerBusiness.id;
     });
   }, [reportItems]);
 

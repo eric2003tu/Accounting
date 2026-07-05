@@ -1,9 +1,17 @@
 import type { JournalLineDto } from '../types';
-import { apiFetch } from './appClient';
+import { generateId } from '@/app/lib/mockData';
+
+function delay(ms = 100) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 
 export const journalLinesClient = {
-  getAll: (journalId?: string): Promise<JournalLineDto[]> => apiFetch(`/journal-lines${journalId ? `?journalId=${journalId}` : ''}`, { method: 'GET', withAuth: true }),
-  create: (payload: Record<string, any>): Promise<JournalLineDto> => apiFetch('/journal-lines', { method: 'POST', body: JSON.stringify(payload), withAuth: true }),
+  getAll: async (journalId?: string): Promise<JournalLineDto[]> => {
+    await delay();
+    return [];
+  },
+  create: async (payload: Record<string, any>): Promise<JournalLineDto> => {
+    await delay();
+    return { id: generateId(), ...payload } as JournalLineDto;
+  },
 };
 
 export default journalLinesClient;

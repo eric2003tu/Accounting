@@ -1,9 +1,17 @@
 import type { PurchaseItemDto } from '../types';
-import { apiFetch } from './appClient';
+import { generateId } from '@/app/lib/mockData';
+
+function delay(ms = 100) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 
 export const purchaseItemsClient = {
-  getAll: (purchaseId?: string): Promise<PurchaseItemDto[]> => apiFetch(`/purchase-items${purchaseId ? `?purchaseId=${purchaseId}` : ''}`, { method: 'GET', withAuth: true }),
-  create: (payload: Record<string, any>): Promise<PurchaseItemDto> => apiFetch('/purchase-items', { method: 'POST', body: JSON.stringify(payload), withAuth: true }),
+  getAll: async (purchaseId?: string): Promise<PurchaseItemDto[]> => {
+    await delay();
+    return [];
+  },
+  create: async (payload: Record<string, any>): Promise<PurchaseItemDto> => {
+    await delay();
+    return { id: generateId(), ...payload } as PurchaseItemDto;
+  },
 };
 
 export default purchaseItemsClient;
