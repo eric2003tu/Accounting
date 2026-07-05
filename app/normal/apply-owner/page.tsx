@@ -23,12 +23,14 @@ export default function ApplyOwnerPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     setLoading(false);
   }, []);
 
   const handleApply = async () => {
+    setConfirmOpen(false);
     setError('');
     setSuccessMessage('');
     setSubmitting(true);
@@ -94,7 +96,7 @@ export default function ApplyOwnerPage() {
           <div className="mt-6">
             <button
               type="button"
-              onClick={handleApply}
+              onClick={() => setConfirmOpen(true)}
               disabled={submitting}
               className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -122,6 +124,54 @@ export default function ApplyOwnerPage() {
           </div>
         </section>
       </div>
+
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Close dialog"
+            className="absolute inset-0 bg-slate-950/45"
+            onClick={() => setConfirmOpen(false)}
+          />
+          <div className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.22)] sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-green-100 p-2 text-green-700">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-slate-900">Confirm application</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Are you sure you want to apply for owner access? This request will be sent to admins for review.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApply}
+                disabled={submitting}
+                className="inline-flex items-center justify-center rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Yes, apply'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
